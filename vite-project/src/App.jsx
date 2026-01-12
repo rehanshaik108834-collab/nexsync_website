@@ -14,10 +14,7 @@ function App() {
     <Routes>
       <Route path="/auth" element={<RouteGuard element={<AuthPage />} authenticated={auth?.authenticated} user={auth?.user} />} />
       <Route path="/admin" element={<RouteGuard element={<AdminPage />} authenticated={auth?.authenticated} user={auth?.user} />} />
-      <Route path="/" element={<RouteGuard element={<StudentViewCommonLayout />} authenticated={auth?.authenticated} user={auth?.user} />}>
-        <Route index element={<Navigate to="/home" replace />} />
-        <Route path="home" element={<StudentHomePage />} />
-      </Route>
+      <Route path="/" element={<RouteGuard element={<StudentHomePage />} authenticated={auth?.authenticated} user={auth?.user} />} />
     </Routes>
   );
 

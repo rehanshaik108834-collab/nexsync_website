@@ -1,1359 +1,1665 @@
-import React, { useState, useEffect, useRef } from 'react';
+/**
+ * NEXSYNC PLATFORM v2.5 - PRODUCTION RELEASE
+ * Architecture: Component-Based Monolith
+ * Visualization: Three.js WebGL Renderer
+ * Styling: CSS-in-JS with CSS Variables & GPU Acceleration
+ */
 
-const NexSyncApp = () => {
-  const [currentPage, setCurrentPage] = useState('home');
-  const [scrolled, setScrolled] = useState(false);
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
-  const canvasRef = useRef(null);
-  const cursorDotRef = useRef(null);
-  const cursorCircleRef = useRef(null);
+import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
+import * as THREE from "three";
 
+/* --- 1. UTILITY: CUSTOM HOOKS --- */
+
+// Hook for Scroll Reveal Animations
+const useScrollReveal = (ref, threshold = 0.1) => {
+  const [isVisible, setIsVisible] = useState(false);
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (cursorDotRef.current && cursorCircleRef.current) {
-        cursorDotRef.current.style.top = e.clientY + 'px';
-        cursorDotRef.current.style.left = e.clientX + 'px';
-        
-        setTimeout(() => {
-          if (cursorCircleRef.current) {
-            cursorCircleRef.current.style.top = e.clientY + 'px';
-            cursorCircleRef.current.style.left = e.clientX + 'px';
-          }
-        }, 50);
-      }
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    return () => document.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  useEffect(() => {
-    const hoverTriggers = document.querySelectorAll('.hover-trigger');
-    
-    const handleMouseEnter = () => setIsHovering(true);
-    const handleMouseLeave = () => setIsHovering(false);
-    
-    hoverTriggers.forEach(trigger => {
-      trigger.addEventListener('mouseenter', handleMouseEnter);
-      trigger.addEventListener('mouseleave', handleMouseLeave);
-    });
-    
-    return () => {
-      hoverTriggers.forEach(trigger => {
-        trigger.removeEventListener('mouseenter', handleMouseEnter);
-        trigger.removeEventListener('mouseleave', handleMouseLeave);
-      });
-    };
-  }, [currentPage]);
-
-  useEffect(() => {
-    if (currentPage !== 'home') return;
-    
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    let width = canvas.width = window.innerWidth;
-    let height = canvas.height = window.innerHeight;
-    
-    class Particle {
-      constructor() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.speed = Math.random() * 5 + 2;
-        this.size = Math.random() * 2 + 0.5;
-        this.color = Math.random() > 0.9 ? '#D1FF00' : 'rgba(255,255,255,0.1)';
-      }
-      update() {
-        this.x -= this.speed;
-        if (this.x < 0) {
-          this.x = width;
-          this.y = Math.random() * height;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(ref.current);
         }
-      }
-      draw() {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.size * 10, this.size);
-      }
+      },
+      { threshold }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => {
+      if (ref.current) observer.unobserve(ref.current);
+    };
+  }, [ref, threshold]);
+  return isVisible;
+};
+
+/* --- 2. 3D COMPONENT: V2X CONNECTIVITY SPHERE --- 
+   Procedurally generates a network of nodes representing Smart Mobility Infrastructure */
+const NetworkGlobe = () => {
+  const mountRef = useRef(null);
+
+  useEffect(() => {
+    const container = mountRef.current;
+    if (!container) return;
+
+    // A. Scene Setup
+    const scene = new THREE.Scene();
+    // Heavy fog to blend the 3D object into the dark background seamlessly
+    scene.fog = new THREE.FogExp2(0x050505, 0.035);
+
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      container.clientWidth / container.clientHeight,
+      0.1,
+      1000
+    );
+    camera.position.z = 4.2;
+
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Retain quality on high-DPI
+    container.appendChild(renderer.domElement);
+
+    // B. Object Groups
+    const mainGroup = new THREE.Group();
+    scene.add(mainGroup);
+
+    // 1. The Core Infrastructure (Wireframe Icosahedron)
+    const geometry = new THREE.IcosahedronGeometry(1.5, 1);
+    const material = new THREE.MeshBasicMaterial({
+      color: 0x1a1a1a,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.15,
+    });
+    const sphere = new THREE.Mesh(geometry, material);
+    mainGroup.add(sphere);
+
+    // 2. The Data Nodes (Particle System representing Sensors/Lidar points)
+    const particlesGeom = new THREE.BufferGeometry();
+    const particleCount = 700;
+    const posArray = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount * 3; i++) {
+      // Spread particles in a chaotic spherical cloud
+      posArray[i] = (Math.random() - 0.5) * 7;
     }
-    
-    const particles = Array.from({ length: 150 }, () => new Particle());
-    
+
+    particlesGeom.setAttribute(
+      "position",
+      new THREE.BufferAttribute(posArray, 3)
+    );
+    const particlesMat = new THREE.PointsMaterial({
+      size: 0.02,
+      color: 0xd1ff00, // BRAND NEON
+      transparent: true,
+      opacity: 0.8,
+      blending: THREE.AdditiveBlending,
+    });
+    const particleMesh = new THREE.Points(particlesGeom, particlesMat);
+    mainGroup.add(particleMesh);
+
+    // 3. The Network Lines (Representing V2V Communication)
+    const lineMat = new THREE.LineBasicMaterial({
+      color: 0xd1ff00,
+      transparent: true,
+      opacity: 0.04,
+    });
+    const lineGeo = new THREE.WireframeGeometry(
+      new THREE.IcosahedronGeometry(2.0, 2)
+    );
+    const lines = new THREE.LineSegments(lineGeo, lineMat);
+    mainGroup.add(lines);
+
+    // C. Animation Loop
+    let frameId;
     const animate = () => {
-      ctx.clearRect(0, 0, width, height);
-      particles.forEach(p => { p.update(); p.draw(); });
-      requestAnimationFrame(animate);
+      frameId = requestAnimationFrame(animate);
+
+      // Technical Rotation
+      mainGroup.rotation.y += 0.002;
+      mainGroup.rotation.x += 0.0005;
+
+      // Breathing/Pulse Effect
+      const time = Date.now() * 0.001;
+      lines.scale.setScalar(1 + Math.sin(time) * 0.03);
+      particleMesh.rotation.y = -time * 0.05;
+
+      renderer.render(scene, camera);
     };
     animate();
-    
+
+    // D. Resize Handler
     const handleResize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      if (!container) return;
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
     };
-    window.addEventListener('resize', handleResize);
-    
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      cancelAnimationFrame(frameId);
+      if (container && renderer.domElement)
+        container.removeChild(renderer.domElement);
+      // Memory Cleanup
+      geometry.dispose();
+      material.dispose();
+      particlesGeom.dispose();
+      particlesMat.dispose();
+      lineGeo.dispose();
+      lineMat.dispose();
+    };
+  }, []);
+
+  return <div ref={mountRef} className="three-canvas-wrapper" />;
+};
+
+/* --- 3. UI SUB-COMPONENTS --- */
+
+const Navbar = ({ scrolled, setPage }) => (
+  <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
+    <div className="nav-brand hover-trigger">
+      NEX<span className="brand-accent">SYNC</span>.
+    </div>
+    <div className="nav-menu">
+      <a href="#about" className="nav-link hover-trigger">
+        Mission
+      </a>
+      <a href="#events" className="nav-link hover-trigger">
+        Events
+      </a>
+      <a href="#projects" className="nav-link hover-trigger">
+        Projects
+      </a>
+      <a href="#team" className="nav-link hover-trigger">
+        Personnel
+      </a>
+    </div>
+    <div className="nav-auth">
+      <button
+        className="btn-icon hover-trigger"
+        onClick={() => setPage("login")}
+      >
+        <i className="fas fa-fingerprint"></i> LOGIN
+      </button>
+    </div>
+  </nav>
+);
+
+const Hero = () => (
+  <section className="hero-section">
+    <div className="hero-grid">
+      <div className="hero-content">
+        <div
+          className="status-badge fade-in-up"
+          style={{ animationDelay: "0.1s" }}
+        >
+          <span className="led-indicator"></span> SYSTEM ONLINE /// V.2.0.26
+        </div>
+
+        <h1
+          className="hero-title fade-in-up"
+          style={{ animationDelay: "0.2s" }}
+        >
+          NEXSYNC
+          <span className="hero-subtitle">SMART MOBILITY LAB</span>
+        </h1>
+
+        <p className="hero-brief fade-in-up" style={{ animationDelay: "0.3s" }}>
+          We are the R&D node for autonomous systems at IIIT Sri City.
+          Integrating <strong>V2X Protocols</strong>,{" "}
+          <strong>Sensor Fusion</strong>, and <strong>Deep Learning</strong> to
+          architect the future of transport.
+        </p>
+
+        <div
+          className="hero-cta-group fade-in-up"
+          style={{ animationDelay: "0.4s" }}
+        >
+          <a href="#projects" className="btn btn-primary hover-trigger">
+            <span>ACCESS PROJECTS</span>
+          </a>
+          <a href="#contact" className="btn btn-secondary hover-trigger">
+            <span>JOIN NETWORK</span>
+          </a>
+        </div>
+
+        <div
+          className="hero-metrics fade-in-up"
+          style={{ animationDelay: "0.5s" }}
+        >
+          <div className="metric">
+            <span className="metric-val">50+</span>
+            <span className="metric-label">ACTIVE NODES</span>
+          </div>
+          <div className="metric">
+            <span className="metric-val">12ms</span>
+            <span className="metric-label">LATENCY</span>
+          </div>
+          <div className="metric">
+            <span className="metric-val">L4</span>
+            <span className="metric-label">AUTONOMY</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="hero-visual fade-in">
+        {/* 3D Component Mounted Here */}
+        <NetworkGlobe />
+        <div className="visual-overlay"></div>
+      </div>
+    </div>
+  </section>
+);
+
+const About = () => {
+  const ref = useRef();
+  const isVisible = useScrollReveal(ref);
+
+  return (
+    <section
+      id="about"
+      ref={ref}
+      className={`content-section ${isVisible ? "visible" : ""}`}
+    >
+      <div className="section-header">
+        <span className="section-label">01 /// DIRECTIVES</span>
+        <h2 className="section-title">Mission Profile</h2>
+      </div>
+
+      <div className="bento-grid">
+        <div className="bento-card span-4 hover-lift">
+          <div className="card-bg-icon">
+            <i className="fas fa-network-wired"></i>
+          </div>
+          <div className="card-content">
+            <div className="icon-box">
+              <i className="fas fa-satellite-dish"></i>
+            </div>
+            <h3>The Core Directive</h3>
+            <p>
+              NexSync bridges the gap between theoretical algorithms and asphalt
+              reality. We don't just build code; we deploy systems that see,
+              think, and drive. Our focus spans from{" "}
+              <strong>Embedded IoT Clusters</strong> to{" "}
+              <strong>Crowd Density Analytics</strong>.
+            </p>
+          </div>
+        </div>
+        <div className="bento-card span-2 hover-lift">
+          <div className="card-content">
+            <div className="icon-box">
+              <i className="fas fa-microchip"></i>
+            </div>
+            <h3>Embedded Systems</h3>
+            <p>
+              Hardware deployment for ADAS using ESP32, Jetson Nano, and LiDAR
+              integration.
+            </p>
+          </div>
+        </div>
+        <div className="bento-card span-2 hover-lift">
+          <div className="card-content">
+            <div className="icon-box">
+              <i className="fas fa-eye"></i>
+            </div>
+            <h3>Computer Vision</h3>
+            <p>
+              Real-time path planning and object detection using YOLO v8 and
+              OpenCV.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const Events = () => {
+  const ref = useRef();
+  const isVisible = useScrollReveal(ref);
+
+  return (
+    <section
+      id="events"
+      ref={ref}
+      className={`content-section ${isVisible ? "visible" : ""}`}
+    >
+      <div className="section-header">
+        <span className="section-label">02 /// OPERATIONS</span>
+        <h2 className="section-title">Event Logs</h2>
+      </div>
+
+      <div className="events-grid">
+        {/* Featured Event */}
+        <div className="event-card featured hover-lift">
+          <div className="scan-line"></div>
+          <div className="event-status">
+            <span className="blink-dot"></span> REGISTRATION ACTIVE
+          </div>
+          <div className="event-body">
+            <h3 className="glitch-text-sm">AGENTICA</h3>
+            <p className="event-desc">
+              The Ultimate AI Agent Mobility Challenge. Part of Abhisarga '26.
+            </p>
+            <div className="event-meta">
+              <div className="meta-item">
+                <i className="fas fa-calendar"></i> FEB 27 - MAR 2
+              </div>
+              <div className="meta-item highlight">
+                <i className="fas fa-trophy"></i> ₹2.25 LAKH POOL
+              </div>
+            </div>
+            <button className="btn-text hover-trigger">
+              INITIALIZE REGISTRATION <i className="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+
+        {/* Past Events */}
+        <div className="event-group">
+          <div className="event-card compact hover-lift">
+            <div className="card-badge">COMPLETED</div>
+            <div className="event-body">
+              <h3>Inno Ventures</h3>
+              <p>AIML in Transportation Design Challenge.</p>
+              <div className="meta-item dim">Winner Prize: ₹10k</div>
+            </div>
+          </div>
+          <div className="event-card compact hover-lift">
+            <div className="card-badge">COMPLETED</div>
+            <div className="event-body">
+              <h3>Logo Ventures</h3>
+              <p>Identity Design for Future Mobility Systems.</p>
+              <div className="meta-item dim">Winner Prize: ₹1k</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const Projects = () => {
+  const ref = useRef();
+  const isVisible = useScrollReveal(ref);
+
+  return (
+    <section
+      id="projects"
+      ref={ref}
+      className={`content-section ${isVisible ? "visible" : ""}`}
+    >
+      <div className="section-header">
+        <span className="section-label">03 /// R&D LOGS</span>
+        <h2 className="section-title">System Builds</h2>
+      </div>
+
+      <div className="projects-table">
+        <div className="table-header">
+          <span>ID</span>
+          <span>PROJECT NAME</span>
+          <span>TECH STACK</span>
+          <span>STATUS</span>
+        </div>
+
+        <div className="table-row hover-bg hover-trigger">
+          <span className="p-id">SYS-01</span>
+          <div className="p-info">
+            <h4>GeoGuide</h4>
+            <span>Routing & Discovery Assistant</span>
+          </div>
+          <div className="p-stack">
+            <span className="pill">FLASK</span>
+            <span className="pill">SQL</span>
+            <span className="pill">REACT</span>
+          </div>
+          <div className="p-status done">COMPLETED</div>
+        </div>
+
+        <div className="table-row hover-bg hover-trigger">
+          <span className="p-id">SYS-02</span>
+          <div className="p-info">
+            <h4>Crowd Density AI</h4>
+            <span>CV-based Safety Analytics</span>
+          </div>
+          <div className="p-stack">
+            <span className="pill">YOLO</span>
+            <span className="pill">OPENCV</span>
+            <span className="pill">PYTHON</span>
+          </div>
+          <div className="p-status wip">IN PROGRESS</div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const Team = () => {
+  const ref = useRef();
+  const isVisible = useScrollReveal(ref);
+
+  // --- DATA CONFIGURATION ---
+  // Replace 'imgUrl' with your actual file paths (e.g., "/images/prathiba.jpg")
+  const coreCommittee = [
+    { name: "PRATHIBA RAVI", role: "UG3 // CORE", imgUrl: null },
+    { name: "CEFAN S S", role: "UG2 // CORE", imgUrl: null },
+    { name: "MOHAMMAD SHAZIL", role: "UG2 // CORE", imgUrl: null },
+    { name: "DHARUN PRASAD", role: "UG2 // CORE", imgUrl: null },
+    { name: "K NIKIL PRASANNAA", role: "UG2 // CORE", imgUrl: null },
+  ];
+
+  const domainLeads = [
+    { name: "SRIMAN SOMA", role: "AI/ML LEAD", imgUrl: null },
+    { name: "GOUTAM BOPPANA", role: "DATA LEAD", imgUrl: null },
+    { name: "MANO RANJAN E", role: "ELEC LEAD", imgUrl: null },
+    { name: "MUTHURAJA S", role: "UI/UX LEAD", imgUrl: null },
+    { name: "STALIN V", role: "PR LEAD", imgUrl: null },
+  ];
+
+  return (
+    <section
+      id="team"
+      ref={ref}
+      className={`content-section ${isVisible ? "visible" : ""}`}
+    >
+      <div className="section-header">
+        <span className="section-label">04 /// PERSONNEL</span>
+        <h2 className="section-title">Command Structure</h2>
+      </div>
+
+      {/* 1. CLUB LEADS (Highlight Cards) */}
+      <div className="leads-wrapper" style={{ marginBottom: "80px" }}>
+        <div className="lead-card hover-lift hover-trigger">
+          <div className="lead-visual">
+             {/* Put Club Lead Photo Here */}
+            <img src="https://placehold.co/400x500/111/333?text=LEAD" alt="Lead" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+            <div className="lead-overlay"></div>
+          </div>
+          <div className="lead-data">
+            <h5>ADITHYA RAM S</h5>
+            <span className="role">CLUB LEAD // UG3</span>
+          </div>
+        </div>
+        <div className="lead-card hover-lift hover-trigger">
+          <div className="lead-visual">
+            {/* Put Co-Lead Photo Here */}
+            <img src="https://placehold.co/400x500/111/333?text=CO-LEAD" alt="Co-Lead" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+            <div className="lead-overlay"></div>
+          </div>
+          <div className="lead-data">
+            <h5>DHYANESH</h5>
+            <span className="role">CO-LEAD // UG3</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. CORE COMMITTEE GRID */}
+      <div className="roster-section" style={{ marginBottom: "60px" }}>
+        <h3 className="subsection-header">
+          <i className="fas fa-shield-alt"></i> CORE COMMITTEE
+        </h3>
+        <div className="members-grid">
+          {coreCommittee.map((member, index) => (
+            <div key={index} className="member-card hover-lift hover-trigger">
+              <div className="member-visual">
+                {/* Image Logic: Uses placeholder if imgUrl is null */}
+                <img 
+                  src={member.imgUrl || `https://placehold.co/300x350/0a0a0a/333?text=${member.name.split(' ')[0]}`} 
+                  alt={member.name} 
+                />
+                <div className="visual-scanline"></div>
+              </div>
+              <div className="member-info">
+                <h4>{member.name}</h4>
+                <span className="member-role">{member.role}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. DOMAIN LEADS GRID */}
+      <div className="roster-section">
+        <h3 className="subsection-header">
+          <i className="fas fa-code-branch"></i> DOMAIN LEADS
+        </h3>
+        <div className="members-grid">
+          {domainLeads.map((member, index) => (
+            <div key={index} className="member-card hover-lift hover-trigger">
+              <div className="member-visual">
+                 {/* Image Logic */}
+                <img 
+                  src={member.imgUrl || `https://placehold.co/300x350/0a0a0a/333?text=${member.name.split(' ')[0]}`} 
+                  alt={member.name} 
+                />
+                <div className="visual-scanline"></div>
+              </div>
+              <div className="member-info">
+                <h4>{member.name}</h4>
+                <span className="member-role">{member.role}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+    </section>
+  );
+};
+const Footer = () => (
+  <footer id="contact" style={{ marginTop: "100px", position: "relative" }}>
+    {/* 1. Decorative Top Border with "System End" Badge */}
+    <div
+      style={{
+        borderTop: "1px solid var(--border)",
+        display: "flex",
+        justifyContent: "center",
+        transform: "translateY(-50%)",
+      }}
+    >
+      <span
+        style={{
+          background: "var(--bg)",
+          padding: "0 20px",
+          fontFamily: "var(--font-mono)",
+          fontSize: "0.7rem",
+          color: "var(--text-secondary)",
+          letterSpacing: "2px",
+        }}
+      >
+        /// END OF LINE
+      </span>
+    </div>
+
+    <div
+      className="footer-content"
+      style={{
+        padding: "80px 5% 40px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        textAlign: "center",
+      }}
+    >
+      {/* 2. Main Identity Block */}
+      <h2
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize: "6rem",
+          lineHeight: "0.8",
+          marginBottom: "10px",
+          textTransform: "uppercase",
+          letterSpacing: "-2px",
+          background: "linear-gradient(180deg, #fff, #666)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+        }}
+      >
+        NexSync
+      </h2>
+
+      <p
+        style={{
+          fontFamily: "var(--font-mono)",
+          color: "var(--neon)",
+          fontSize: "1rem",
+          letterSpacing: "2px",
+          marginBottom: "50px",
+          textTransform: "uppercase",
+          opacity: 0.8,
+        }}
+      >
+        Smart Mobility Club at IIIT Sri City
+      </p>
+
+      {/* 3. The Tagline - Styled as a "Mission Statement" Box */}
+      <div
+        className="hover-lift"
+        style={{
+          border: "1px solid var(--border)",
+          borderLeft: "4px solid var(--neon)",
+          background: "rgba(255,255,255,0.02)",
+          padding: "30px 40px",
+          maxWidth: "700px",
+          marginBottom: "60px",
+          position: "relative",
+          backdropFilter: "blur(5px)",
+        }}
+      >
+        <i
+          className="fas fa-quote-left"
+          style={{
+            position: "absolute",
+            top: "-15px",
+            left: "20px",
+            background: "var(--bg)",
+            padding: "0 10px",
+            color: "var(--neon)",
+          }}
+        ></i>
+        <h3
+          style={{
+            fontFamily: "var(--font-body)",
+            color: "#fff",
+            fontSize: "1.4rem",
+            fontWeight: "300",
+            letterSpacing: "0.5px",
+          }}
+        >
+          Driving Innovation Forward: Empowering the Future of Smart Mobility
+        </h3>
+      </div>
+
+      {/* 4. Navigation - Styled as Terminal Links */}
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "center",
+          gap: "10px",
+          marginBottom: "50px",
+          fontFamily: "var(--font-mono)",
+        }}
+      >
+        {["Home", "About", "Events", "Team", "Contact"].map((item, index) => (
+          <React.Fragment key={item}>
+            {index > 0 && (
+              <span style={{ color: "var(--border)", padding: "0 15px" }}>
+                //
+              </span>
+            )}
+            <a
+              href={`#${
+                item.toLowerCase() === "home" ? "" : item.toLowerCase()
+              }`}
+              className="hover-trigger"
+              style={{
+                fontSize: "0.9rem",
+                textTransform: "uppercase",
+                letterSpacing: "1px",
+                color: "var(--text-secondary)",
+                transition: "color 0.3s",
+              }}
+              onMouseEnter={(e) => (e.target.style.color = "var(--neon)")}
+              onMouseLeave={(e) =>
+                (e.target.style.color = "var(--text-secondary)")
+              }
+            >
+              {item}
+            </a>
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* 5. Copyright */}
+      <div
+        style={{
+          borderTop: "1px solid rgba(255,255,255,0.05)",
+          width: "100%",
+          paddingTop: "30px",
+          fontFamily: "var(--font-mono)",
+          fontSize: "0.75rem",
+          color: "var(--text-secondary)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "10px",
+        }}
+      >
+        <span
+          style={{
+            width: "8px",
+            height: "8px",
+            background: "var(--neon)",
+            borderRadius: "50%",
+            display: "inline-block",
+          }}
+        ></span>
+        © 2024 NexSync. All rights reserved.
+      </div>
+    </div>
+  </footer>
+);
+
+
+
+const ContactSection = () => {
+  const ref = useRef();
+  const isVisible = useScrollReveal(ref);
+
+  return (
+    <section
+      id="contact-nexus"
+      ref={ref}
+      className={`content-section ${isVisible ? "visible" : ""}`}
+      style={{ paddingBottom: 0 }}
+    >
+      <div className="section-header">
+        <span className="section-label">05 /// COMM-LINK</span>
+        <h2 className="section-title">Establish Connection</h2>
+      </div>
+
+      <div className="contact-hud-grid">
+        {/* LEFT: MAIN VISUAL & INTRO */}
+        <div className="hud-panel main hover-lift">
+            <div className="panel-decor-corner top-left"></div>
+            <div className="panel-decor-corner bottom-right"></div>
+            
+            <div className="hud-status">
+                <span className="blink-dot" style={{background: 'var(--neon)'}}></span> 
+                CHANNEL_OPEN // ENCRYPTED
+            </div>
+            
+            <h3 className="hud-title">
+                READY TO <br />
+                <span style={{color: 'var(--neon)'}}>COLLABORATE?</span>
+            </h3>
+            
+            <p className="hud-text">
+                Join the network. Whether for research collaboration, membership inquiries, or industrial partnership, our communication lines are active.
+            </p>
+
+            <div className="hud-action">
+                <a href="mailto:nexsyncmotors.club@iiits.in" className="btn btn-primary hover-trigger">
+                    <span>INITIATE PROTOCOL <i className="fas fa-paper-plane" style={{marginLeft:'10px'}}></i></span>
+                </a>
+            </div>
+        </div>
+
+        {/* RIGHT: DATA CARDS */}
+        <div className="hud-right-col">
+            
+            {/* CARD 1: LAB LOCATION */}
+            <div className="hud-card hover-lift hover-trigger">
+                <div className="icon-badge">
+                    <i className="fas fa-map-marked-alt"></i>
+                </div>
+                <div className="card-info">
+                    <h4>BASE_OF_OPS</h4>
+                    <p className="highlight">Academic Block - 1, Room 248</p>
+                    <p className="sub">IIIT Sri City, Andhra Pradesh</p>
+                </div>
+                <div className="status-pill">Active</div>
+            </div>
+
+            {/* CARD 2: ACCESS HOURS */}
+            <div className="hud-card hover-lift hover-trigger">
+                <div className="icon-badge">
+                    <i className="fas fa-clock"></i>
+                </div>
+                <div className="card-info">
+                    <h4>OPERATIONAL_HOURS</h4>
+                    <p className="highlight">24/7 Access</p>
+                    <p className="sub">Restricted to Members</p>
+                </div>
+                <div className="status-pill warning">Restricted</div>
+            </div>
+
+            {/* CARD 3: CONTACT SPECS */}
+            <div className="hud-card hover-lift hover-trigger">
+                <div className="icon-badge">
+                    <i className="fas fa-satellite"></i>
+                </div>
+                <div className="card-info">
+                    <h4>DIRECT_LINE</h4>
+                    <p className="highlight">+91 8825506227</p>
+                    <p className="sub">nexsyncmotors.club@iiits.in</p>
+                </div>
+                <div className="status-pill">Online</div>
+            </div>
+        </div>
+      </div>
+
+      {/* --- NEW: SOCIAL TRANSMISSION BAR --- */}
+      <div className="social-nexus-bar hover-lift">
+          <div className="social-text">
+              <h3>Follow Our Journey</h3>
+              <p>Stay updated with our latest smart mobility innovations and events</p>
+          </div>
+          <div className="social-nodes">
+              <a href="#" className="social-node instagram hover-trigger">
+                  <i className="fab fa-instagram"></i>
+              </a>
+              <a href="#" className="social-node linkedin hover-trigger">
+                  <i className="fab fa-linkedin-in"></i>
+              </a>
+              <a href="#" className="social-node twitter hover-trigger">
+                  <i className="fab fa-twitter"></i>
+              </a>
+          </div>
+          {/* Decorative background scanline */}
+          <div className="scan-line-horizontal"></div>
+      </div>
+
+    </section>
+  );
+};
+/* --- 4. AUTH & ADMIN PAGES --- */
+
+const LoginPage = ({
+  setPage,
+  email,
+  setEmail,
+  pass,
+  setPass,
+  handleLogin,
+}) => (
+  <div className="login-wrapper fade-in">
+    <div className="login-interface">
+      <div className="login-header">
+        <h2>SYSTEM ACCESS</h2>
+        <p>/// IDENTITY VERIFICATION REQUIRED</p>
+      </div>
+      <form onSubmit={handleLogin}>
+        <div className="input-group">
+          <i className="fas fa-user"></i>
+          <input
+            type="email"
+            placeholder="USER ID"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="input-group">
+          <i className="fas fa-key"></i>
+          <input
+            type="password"
+            placeholder="ACCESS KEY"
+            value={pass}
+            onChange={(e) => setPass(e.target.value)}
+            required
+          />
+        </div>
+        <button type="submit" className="btn-login hover-trigger">
+          AUTHENTICATE
+        </button>
+      </form>
+      <button
+        className="btn-back hover-trigger"
+        onClick={() => setPage("home")}
+      >
+        ABORT SEQUENCE
+      </button>
+    </div>
+  </div>
+);
+
+const AdminPage = ({ setPage }) => (
+  <div className="admin-container fade-in">
+    <div className="admin-sidebar">
+      <div className="logo-text">NX_ADMIN</div>
+      <div className="menu-list">
+        <div className="menu-item active hover-trigger">
+          <i className="fas fa-chart-pie"></i> DASHBOARD
+        </div>
+        <div className="menu-item hover-trigger">
+          <i className="fas fa-users"></i> REQUESTS{" "}
+          <span className="notif">3</span>
+        </div>
+        <div className="menu-item hover-trigger">
+          <i className="fas fa-database"></i> LOGS
+        </div>
+      </div>
+      <div
+        className="menu-item logout hover-trigger"
+        onClick={() => setPage("home")}
+      >
+        <i className="fas fa-power-off"></i> TERMINATE
+      </div>
+    </div>
+    <div className="admin-content">
+      <header className="admin-header">
+        <h2>SYSTEM COMMAND</h2>
+        <div className="user-profile">ADITHYA RAM [ADMIN]</div>
+      </header>
+
+      <div className="stats-deck">
+        <div className="stat-card hover-trigger">
+          <h3>867</h3>
+          <p>AGENTICA REGISTRATIONS</p>
+        </div>
+        <div className="stat-card hover-trigger">
+          <h3>24</h3>
+          <p>ACTIVE PERSONNEL</p>
+        </div>
+        <div className="stat-card hover-trigger">
+          <h3>98%</h3>
+          <p>SERVER UPTIME</p>
+        </div>
+      </div>
+
+      <div className="data-panel">
+        <h3>PENDING APPROVALS</h3>
+        <div className="data-table-admin">
+          <div className="row header">
+            <span>NAME</span>
+            <span>PROJECT</span>
+            <span>SKILLSET</span>
+            <span>ACTION</span>
+          </div>
+          <div className="row hover-trigger">
+            <span>Rohan Kumar</span>
+            <span>Density AI</span>
+            <span>Python, OpenCV</span>
+            <button className="btn-xs">REVIEW</button>
+          </div>
+          <div className="row hover-trigger">
+            <span>Sneha P.</span>
+            <span>GeoGuide</span>
+            <span>React, Node</span>
+            <button className="btn-xs">REVIEW</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+/* --- 5. MAIN CONTROLLER --- */
+
+const NexSyncApp = () => {
+  const [currentPage, setCurrentPage] = useState("home");
+  const [scrolled, setScrolled] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+
+  // Cursor Physics Refs
+  const cursorDotRef = useRef(null);
+  const cursorCircleRef = useRef(null);
+  const [isHovering, setIsHovering] = useState(false);
+
+  // A. Scroll Listener
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 30);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // B. Physics-Based Cursor Logic (LERP)
+  useEffect(() => {
+    let mouseX = 0;
+    let mouseY = 0;
+    let circleX = 0;
+    let circleY = 0;
+
+    // Track mouse position
+    const onMouseMove = (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      // Dot moves instantly
+      if (cursorDotRef.current) {
+        cursorDotRef.current.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
+      }
+    };
+
+    // Animation Loop for Circle (Lag Effect)
+    const animateCursor = () => {
+      // LERP: Move circle 15% of the way to the mouse position every frame
+      circleX += (mouseX - circleX) * 0.15;
+      circleY += (mouseY - circleY) * 0.15;
+
+      if (cursorCircleRef.current) {
+        cursorCircleRef.current.style.transform = `translate3d(${circleX}px, ${circleY}px, 0)`;
+      }
+      requestAnimationFrame(animateCursor);
+    };
+    animateCursor();
+
+    const onMouseEnter = () => setIsHovering(true);
+    const onMouseLeave = () => setIsHovering(false);
+
+    // Attach hover listeners dynamically
+    const addListeners = () => {
+      const triggers = document.querySelectorAll(
+        "a, button, .hover-trigger, .hover-lift"
+      );
+      triggers.forEach((t) => {
+        t.addEventListener("mouseenter", onMouseEnter);
+        t.addEventListener("mouseleave", onMouseLeave);
+      });
+      return triggers;
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    const triggers = addListeners();
+
+    // Re-bind if DOM changes
+    const observer = new MutationObserver(addListeners);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      triggers.forEach((t) => {
+        t.removeEventListener("mouseenter", onMouseEnter);
+        t.removeEventListener("mouseleave", onMouseLeave);
+      });
+      observer.disconnect();
+    };
   }, [currentPage]);
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (loginEmail.includes('admin')) {
-      setCurrentPage('admin');
+    if (loginEmail.toLowerCase().includes("admin")) {
+      setCurrentPage("admin");
     } else {
-      alert('ACCESS DENIED. RESTRICTED AREA.');
+      alert("ACCESS DENIED. INVALID CREDENTIALS.");
     }
   };
 
-  const HomePage = () => (
-    <>
-      <nav className={scrolled ? 'scrolled' : ''} style={{ position: 'relative', zIndex: 100 }}>
-        <div className="logo hover-trigger">
-          NEX<span style={{ color: '#d1ff00' }}>SYNC</span>.
-        </div>
-        <div className="nav-items">
-          <a href="#mission" className="nav-link hover-trigger">Mission</a>
-          <a href="#events" className="nav-link hover-trigger">Events</a>
-          <a href="#projects" className="nav-link hover-trigger">Projects</a>
-          <a href="#team" className="nav-link hover-trigger">Team</a>
-        </div>
-        <button onClick={() => setCurrentPage('login')} className="btn btn-primary hover-trigger">JOIN CLUB</button>
-      </nav>
-
-      <section className="hero" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="hero-content">
-          <div className="hero-text">
-            <div className="hero-label">/// IIIT SRI CITY SMART MOBILITY LAB</div>
-            <h1>Building the <br />Autonomous Future</h1>
-            <p className="hero-p">
-              NexSync integrates V2V/V2I communication, IoT sensors for ADAS, and
-              Computer Vision to build the next generation of transport systems.
-            </p>
-            <div className="btn-group">
-              <a href="#projects" className="btn btn-primary hover-trigger">View Projects</a>
-              <a href="#about" className="btn btn-glass hover-trigger">Explore Data</a>
-            </div>
-          </div>
-
-          <div className="hero-visual">
-            <img
-              src="https://purepng.com/public/uploads/large/purepng.com-mclaren-p1-gtr-carcarvehicletransportmclaren-961524663363hsmca.png"
-              alt="Autonomous Concept"
-              className="car-img hover-trigger"
-            />
-            <div className="lidar-badge">
-              LIDAR: ACTIVE<br />LATENCY: 12ms
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="mission" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="section-header">
-          <h2>Core Directives</h2>
-          <p>/// SECTOR 01: R&D OBJECTIVES</p>
-        </div>
-
-        <div className="bento-grid">
-          <div className="card span-2 hover-trigger">
-            <div className="card-icon"><i className="fas fa-crosshairs"></i></div>
-            <h3>Our Mission</h3>
-            <p>
-              To accelerate the adoption of intelligent mobility solutions. We
-              empower students to build real-world autonomous systems using
-              Python, IoT, and Deep Learning. We collaborate with industry bodies
-              to build scalable solutions.
-            </p>
-          </div>
-
-          <div className="card hover-trigger">
-            <div className="card-icon"><i className="fas fa-wifi"></i></div>
-            <h3>IoT & Sensors</h3>
-            <p>
-              Hardware deployment for ADAS and V2I (Vehicle to Infrastructure)
-              communication using ESP32 and Lidar.
-            </p>
-          </div>
-
-          <div className="card hover-trigger">
-            <div className="card-icon"><i className="fas fa-robot"></i></div>
-            <h3>AI & Vision</h3>
-            <p>
-              Using YOLO and OpenCV for crowd counting, density analysis, and
-              autonomous path planning algorithms.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section id="team" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="section-header">
-          <h2>Command Structure</h2>
-          <p>/// SECTOR 02: LEADERSHIP NODE</p>
-        </div>
-
-        <div className="team-leads-grid">
-          <div className="team-card hover-trigger" style={{ width: '300px' }}>
-            <img
-              src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=400"
-              className="team-img"
-              alt="Adithya"
-            />
-            <span className="role-tag">CLUB LEAD</span>
-            <div className="member-name">ADITHYA RAM S</div>
-            <div className="member-year">UG3</div>
-          </div>
-          <div className="team-card hover-trigger" style={{ width: '300px' }}>
-            <img
-              src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400"
-              className="team-img"
-              alt="Dhyanesh"
-            />
-            <span className="role-tag">CO-LEAD</span>
-            <div className="member-name">DHYANESH</div>
-            <div className="member-year">UG3</div>
-          </div>
-        </div>
-
-        <h3 className="section-subtitle">CORE COMMITTEE</h3>
-        <div className="team-grid">
-          {[1, 2, 3, 4, 5].map(i => (
-            <div key={i} className="team-card hover-trigger">
-              <span className="role-tag">CORE</span>
-              <div className="member-name">MEMBER 0{i}</div>
-            </div>
-          ))}
-        </div>
-
-        <h3 className="section-subtitle">DOMAIN LEADS</h3>
-        <div className="team-grid">
-          <div className="team-card domain-lead hover-trigger">
-            <span className="role-tag">UI/UX & WEB</span>
-            <div className="member-name">VINOD K.</div>
-          </div>
-          <div className="team-card domain-lead hover-trigger">
-            <span className="role-tag">ELECTRONICS</span>
-            <div className="member-name">LEAD NAME</div>
-          </div>
-          <div className="team-card domain-lead hover-trigger">
-            <span className="role-tag">DATA SCIENCE</span>
-            <div className="member-name">LEAD NAME</div>
-          </div>
-          <div className="team-card domain-lead hover-trigger">
-            <span className="role-tag">AI / ML</span>
-            <div className="member-name">LEAD NAME</div>
-          </div>
-          <div className="team-card domain-lead hover-trigger">
-            <span className="role-tag">PR & OUTREACH</span>
-            <div className="member-name">LEAD NAME</div>
-          </div>
-        </div>
-      </section>
-
-      <section id="events" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="section-header">
-          <h2>Deployments</h2>
-          <p>/// SECTOR 03: LIVE EVENTS</p>
-        </div>
-
-        <div className="bento-grid">
-          <div className="card span-4 agentica-card hover-trigger">
-            <div style={{ flex: 1 }}>
-              <span className="agentica-label">/// UPCOMING HACKATHON</span>
-              <h3 className="agentica-title">AGENTICA</h3>
-              <p className="agentica-desc">
-                The Ultimate AI Agent Mobility Challenge.<br />Part of Abhisarga '26.
-              </p>
-              <div style={{ marginTop: '30px' }}>
-                <a href="#" className="btn btn-primary hover-trigger">REGISTER NOW</a>
-              </div>
-            </div>
-            <div className="agentica-stats">
-              <div className="stat">
-                <h4>867</h4>
-                <span>Registered</span>
-              </div>
-              <div className="stat">
-                <h4>2.25L</h4>
-                <span>Prize Pool</span>
-              </div>
-              <div className="stat">
-                <h4>FEB 27</h4>
-                <span>Launch</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="projects" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="section-header">
-          <h2>Project Log</h2>
-          <p>/// SECTOR 04: COMPLETED BUILDS</p>
-        </div>
-
-        <div className="bento-grid">
-          <div className="card span-2 hover-trigger">
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <h3>GeoGuide</h3>
-              <span className="project-status">COMPLETED</span>
-            </div>
-            <p>
-              Location-based assistant for discovery and trip planning. Focus on
-              Routing and UX.
-            </p>
-            <div className="project-tags">
-              <span className="tag">FLASK</span>
-              <span className="tag">SQL</span>
-            </div>
-          </div>
-
-          <div className="card span-2 hover-trigger">
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <h3>Density AI</h3>
-              <span className="project-status">IN PROGRESS</span>
-            </div>
-            <p>Computer-vision based safety analytics for transport hubs.</p>
-            <div className="project-tags">
-              <span className="tag">YOLO</span>
-              <span className="tag">OPENCV</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <footer style={{ position: 'relative', zIndex: 1 }}>
-        <h2 style={{ fontFamily: 'Teko, sans-serif', fontSize: '3rem' }}>NEXSYNC</h2>
-        <p className="footer-address">
-          ACADEMIC BLOCK-1, ROOM 248 /// IIIT SRI CITY
-        </p>
-        <p className="footer-email">
-          nexsyncmotors.club@iiits.in
-        </p>
-        <p className="footer-copyright">
-          &copy; 2026 NEXSYNC SMART MOBILITY LAB.
-        </p>
-      </footer>
-    </>
-  );
-
-  const LoginPage = () => (
-    <div className="login-container">
-      <div className="scanner-line" />
-      <div className="road-container"><div className="road-grid"></div></div>
-
-      <div className="login-box">
-        <h1 style={{ fontSize: '3rem' }}>SYSTEM ACCESS</h1>
-        <p className="mono" style={{ marginBottom: '30px' }}>
-          /// ADMIN CREDENTIALS REQUIRED
-        </p>
-
-        <form onSubmit={handleLogin}>
-          <input 
-            type="email" 
-            value={loginEmail}
-            onChange={(e) => setLoginEmail(e.target.value)}
-            placeholder="admin@iiits.in"
-            className="input-field"
-          />
-          <input 
-            type="password"
-            value={loginPassword}
-            onChange={(e) => setLoginPassword(e.target.value)}
-            placeholder="PASSWORD"
-            className="input-field"
-          />
-          <button type="submit" className="btn-race" style={{ width: '100%' }}>
-            <span>AUTHENTICATE</span>
-          </button>
-        </form>
-        <button
-          onClick={() => setCurrentPage('home')}
-          className="return-link"
-        >
-          &lt; RETURN
-        </button>
-      </div>
-    </div>
-  );
-
-  const AdminPage = () => (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-      <div className="scanner-line" />
-      <div className="road-container"><div className="road-grid admin-grid"></div></div>
-
-      <div className="sidebar">
-        <div className="logo">NEX<span style={{ color: '#d1ff00' }}>SYNC</span>_</div>
-        <div className="nav-item active">
-          <i className="fas fa-chart-line"></i> STATUS
-        </div>
-        <div className="nav-item"><i className="fas fa-users"></i> PERSONNEL</div>
-        <div className="nav-item"><i className="fas fa-rocket"></i> R&D LOGS</div>
-        <div className="nav-item">
-          <i className="fas fa-envelope"></i> COMMS
-          <span style={{ marginLeft: 'auto', color: '#d1ff00', fontSize: '0.7rem' }}>[3]</span>
-        </div>
-        <div
-          className="nav-item"
-          style={{ marginTop: 'auto' }}
-          onClick={() => setCurrentPage('home')}
-        >
-          <i className="fas fa-power-off"></i> LOGOUT
-        </div>
-      </div>
-
-      <div className="main">
-        <header>
-          <div>
-            <h2>SYSTEM COMMAND</h2>
-            <p style={{ color: '#d1ff00', fontFamily: 'Share Tech Mono' }}>
-              /// WELCOME, ADMIN
-            </p>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontFamily: 'Teko', fontSize: '1.5rem' }}>ADITHYA RAM</div>
-            <span style={{ fontSize: '0.8rem', color: '#888' }}>ID: NX-001</span>
-          </div>
-        </header>
-
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-val">867</div>
-            <div className="stat-label">AGENTICA REGISTRATIONS</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-val">24</div>
-            <div className="stat-label">ACTIVE LAB MEMBERS</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-val">5</div>
-            <div className="stat-label">PENDING APPROVALS</div>
-          </div>
-        </div>
-
-        <div className="table-container">
-          <h3 className="table-title">INCOMING REQUESTS</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>NAME</th>
-                <th>TARGET</th>
-                <th>SKILLS</th>
-                <th>STATUS</th>
-                <th>ACTION</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Rohan Kumar</td>
-                <td>Density AI</td>
-                <td>Python, OpenCV</td>
-                <td><span className="status pending">PENDING</span></td>
-                <td><button className="btn-action">REVIEW</button></td>
-              </tr>
-              <tr>
-                <td>Sneha P.</td>
-                <td>GeoGuide V2</td>
-                <td>React, Node.js</td>
-                <td><span className="status pending">PENDING</span></td>
-                <td><button className="btn-action">REVIEW</button></td>
-              </tr>
-              <tr>
-                <td>Vikram Singh</td>
-                <td>Agentica</td>
-                <td>Team Lead</td>
-                <td><span className="status approved">APPROVED</span></td>
-                <td><button className="btn-action">VIEW</button></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
-    <div style={{ position: 'relative', minHeight: '100vh' }}>
-      {currentPage === 'home' && (
-        <>
-          <div ref={cursorDotRef} className="cursor-dot" />
-          <div ref={cursorCircleRef} className={`cursor-circle ${isHovering ? 'hovering' : ''}`} />
-          
-          <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100vh', zIndex: -2 }}>
-            <div className="road-container"><div className="road-grid"></div></div>
-          </div>
-          
-          <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100vh', zIndex: -1, pointerEvents: 'none' }}>
-            <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%', background: 'radial-gradient(circle at center, #111 0%, #000 100%)' }} />
-          </div>
-          
-          <div className="noise-overlay" />
-          <div className="scanner-line" />
-        </>
+    <div className="app-root">
+      {/* GLOBAL LAYERS */}
+      <div ref={cursorDotRef} className="cursor-dot"></div>
+      <div
+        ref={cursorCircleRef}
+        className={`cursor-circle ${isHovering ? "expanded" : ""}`}
+      ></div>
+      <div className="noise-texture"></div>
+
+      {currentPage === "home" && (
+        <div className="main-layout">
+          <Navbar scrolled={scrolled} setPage={setCurrentPage} />
+          <Hero />
+          <About />
+          <Events />
+          <Projects />
+          <Team />
+          <ContactSection />
+          <Footer />
+        </div>
       )}
-      
+
+      {currentPage === "login" && (
+        <LoginPage
+          setPage={setCurrentPage}
+          email={loginEmail}
+          setEmail={setLoginEmail}
+          pass={loginPassword}
+          setPass={setLoginPassword}
+          handleLogin={handleLogin}
+        />
+      )}
+
+      {currentPage === "admin" && <AdminPage setPage={setCurrentPage} />}
+
+      {/* --- STYLES --- */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@300;600&family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@300;400;600;700&family=Space+Grotesk:wght@300;500;700&family=JetBrains+Mono:wght@400;700&display=swap');
-        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
-        
-        :root {
-          --neon: #d1ff00;
-          --neon-dim: rgba(209, 255, 0, 0.1);
-          --black: #050505;
-          --glass: rgba(255, 255, 255, 0.03);
-          --border: rgba(255, 255, 255, 0.15);
-          --panel: rgba(10, 10, 10, 0.95);
-          --text-main: #ffffff;
-          --text-muted: #888888;
-          --font-display: "Teko", sans-serif;
-          --font-body: "Space Grotesk", sans-serif;
-          --font-code: "JetBrains Mono", monospace;
-        }
+            /* IMPORTS */
+            @import url('https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+            @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-          cursor: none;
-        }
-        
-        html {
-          scroll-behavior: smooth;
-        }
-        
-        body {
-          background-color: var(--black);
-          color: var(--text-main);
-          font-family: var(--font-body);
-          overflow-x: hidden;
-          font-size: 16px;
-        }
+            /* TOKENS */
+            :root {
+                --neon: #d1ff00;
+                --neon-dim: rgba(209, 255, 0, 0.15);
+                --bg: #050505;
+                --surface: #0a0a0a;
+                --surface-highlight: #111111;
+                --border: rgba(255, 255, 255, 0.1);
+                --text: #ffffff;
+                --text-secondary: #888888;
+                --font-display: 'Teko', sans-serif;
+                --font-body: 'Space Grotesk', sans-serif;
+                --font-mono: 'JetBrains Mono', monospace;
+                --ease: cubic-bezier(0.23, 1, 0.32, 1);
+            }
 
-        /* BACKGROUND EFFECTS */
-        .road-container {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
-          perspective: 1000px;
-          z-index: -2;
-          background: #000;
-        }
-        
-        .road-grid {
-          position: absolute;
-          top: 50%;
-          left: -50%;
-          width: 200%;
-          height: 200%;
-          background-image: linear-gradient(
-              0deg,
-              transparent 24%,
-              rgba(209, 255, 0, 0.1) 25%,
-              rgba(209, 255, 0, 0.1) 26%,
-              transparent 27%,
-              transparent 74%,
-              rgba(209, 255, 0, 0.1) 75%,
-              rgba(209, 255, 0, 0.1) 76%,
-              transparent 77%,
-              transparent
-            ),
-            linear-gradient(
-              90deg,
-              transparent 24%,
-              rgba(209, 255, 0, 0.1) 25%,
-              rgba(209, 255, 0, 0.1) 26%,
-              transparent 27%,
-              transparent 74%,
-              rgba(209, 255, 0, 0.1) 75%,
-              rgba(209, 255, 0, 0.1) 76%,
-              transparent 77%,
-              transparent
-            );
-          background-size: 100px 100px;
-          transform: rotateX(80deg);
-          animation: drive 0.5s linear infinite;
-        }
+            /* RESET */
+            * { box-sizing: border-box; cursor: none; margin: 0; padding: 0; }
+            html { scroll-behavior: smooth; }
+            body { background: var(--bg); color: var(--text); font-family: var(--font-body); overflow-x: hidden; line-height: 1.6; }
+            a { text-decoration: none; color: inherit; }
+            button { cursor: none; font-family: inherit; }
+            ul { list-style: none; }
 
-        .admin-grid {
-          animation: drive 4s linear infinite;
-        }
-        
-        @keyframes drive {
-          0% { transform: rotateX(80deg) translateY(0); }
-          100% { transform: rotateX(80deg) translateY(100px); }
-        }
+            /* UTILS */
+            .app-root { position: relative; min-height: 100vh; }
+            .fade-in { animation: fadeIn 1s var(--ease) forwards; opacity: 0; }
+            .fade-in-up { animation: fadeInUp 1s var(--ease) forwards; opacity: 0; transform: translateY(30px); }
+            @keyframes fadeIn { to { opacity: 1; } }
+            @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
 
-        .noise-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          pointer-events: none;
-          z-index: 9998;
-          opacity: 0.05;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-        }
+            .noise-texture {
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9000;
+                opacity: 0.03;
+                background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            }
 
-        .scanner-line {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 3px;
-          background: var(--neon);
-          box-shadow: 0 0 20px var(--neon);
-          opacity: 0.5;
-          animation: scan 4s ease-in-out infinite;
-          pointer-events: none;
-          z-index: 9999;
-        }
-        
-        @keyframes scan {
-          0% { top: -10%; opacity: 0; }
-          50% { opacity: 1; }
-          100% { top: 110%; opacity: 0; }
-        }
+            /* CURSOR */
+            .cursor-dot { position: fixed; width: 6px; height: 6px; background: var(--neon); border-radius: 50%; pointer-events: none; z-index: 10000; top: 0; left: 0; margin: -3px 0 0 -3px; }
+            .cursor-circle { 
+                position: fixed; width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.5); border-radius: 50%; 
+                pointer-events: none; z-index: 9999; top: 0; left: 0; margin: -20px 0 0 -20px;
+                transition: width 0.3s var(--ease), height 0.3s var(--ease), background 0.3s;
+                mix-blend-mode: difference;
+            }
+            .cursor-circle.expanded { width: 80px; height: 80px; margin: -40px 0 0 -40px; background: rgba(255,255,255,0.1); border-color: transparent; }
 
-        /* CUSTOM CURSOR */
-        .cursor-dot,
-        .cursor-circle {
-          position: fixed;
-          top: 0;
-          left: 0;
-          transform: translate(-50%, -50%);
-          border-radius: 50%;
-          pointer-events: none;
-          z-index: 9999;
-        }
-        
-        .cursor-dot {
-          width: 6px;
-          height: 6px;
-          background: var(--neon);
-        }
-        
-        .cursor-circle {
-          width: 40px;
-          height: 40px;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          transition: width 0.3s, height 0.3s, border-color 0.3s;
-        }
-        
-        .cursor-circle.hovering {
-          width: 60px;
-          height: 60px;
-          border-color: var(--neon);
-          background: rgba(209, 255, 0, 0.05);
-          mix-blend-mode: screen;
-        }
+            /* NAVBAR */
+            .navbar { position: fixed; top: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 30px 5%; z-index: 1000; transition: all 0.4s var(--ease); }
+            .navbar.scrolled { background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(12px); padding: 15px 5%; border-bottom: 1px solid var(--border); }
+            .nav-brand { font-family: var(--font-display); font-size: 2.2rem; font-weight: 700; letter-spacing: 1px; }
+            .brand-accent { color: var(--neon); }
+            .nav-menu { display: flex; gap: 40px; background: rgba(255,255,255,0.03); padding: 12px 40px; border-radius: 100px; border: 1px solid var(--border); backdrop-filter: blur(10px); }
+            .nav-link { font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); transition: color 0.3s; position: relative; }
+            .nav-link:hover { color: var(--text); }
+            .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0%; height: 1px; background: var(--neon); transition: width 0.3s var(--ease); }
+            .nav-link:hover::after { width: 100%; }
+            .btn-icon { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); padding: 10px 20px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.8rem; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
+            .btn-icon:hover { border-color: var(--neon); color: var(--neon); }
 
-        /* NAVIGATION */
-        nav {
-          position: fixed;
-          top: 0;
-          width: 100%;
-          padding: 25px 5%;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          z-index: 100;
-          backdrop-filter: blur(10px);
-          border-bottom: 1px solid var(--border);
-          transition: 0.3s;
-        }
-        
-        nav.scrolled {
-          background: rgba(5, 5, 5, 0.9);
-          padding: 15px 5%;
-        }
+            /* HERO */
+            .hero-section { height: 100vh; min-height: 700px; padding: 0 5%; display: flex; align-items: center; position: relative; overflow: hidden; }
+            .hero-grid { display: grid; grid-template-columns: 1.1fr 1fr; width: 100%; max-width: 1400px; margin: 0 auto; align-items: center; z-index: 10; }
+            .status-badge { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 0.75rem; color: var(--neon); border: 1px solid var(--neon-dim); padding: 6px 12px; background: rgba(209,255,0,0.05); margin-bottom: 25px; }
+            .led-indicator { width: 6px; height: 6px; background: var(--neon); border-radius: 50%; box-shadow: 0 0 8px var(--neon); animation: pulse 2s infinite; }
+            @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+            
+            .hero-title { font-family: var(--font-display); font-size: 6.5rem; line-height: 0.9; margin-bottom: 20px; }
+            .hero-subtitle { display: block; font-family: var(--font-body); font-weight: 300; font-size: 2rem; color: var(--text-secondary); letter-spacing: 4px; margin-top: 5px; }
+            .hero-brief { font-size: 1.1rem; color: #ccc; max-width: 500px; margin-bottom: 40px; }
+            .hero-cta-group { display: flex; gap: 20px; margin-bottom: 60px; }
+            .btn { padding: 15px 35px; font-family: var(--font-mono); font-weight: 700; font-size: 0.9rem; letter-spacing: 1px; position: relative; overflow: hidden; border: none; transition: transform 0.2s; }
+            .btn-primary { background: var(--neon); color: black; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+            .btn-primary:hover { box-shadow: 0 0 30px var(--neon-dim); transform: translateY(-2px); }
+            .btn-secondary { background: transparent; color: white; border: 1px solid var(--border); }
+            .btn-secondary:hover { background: rgba(255,255,255,0.05); border-color: white; }
+            
+            .hero-metrics { display: flex; gap: 50px; border-top: 1px solid var(--border); padding-top: 30px; }
+            .metric { display: flex; flex-direction: column; }
+            .metric-val { font-family: var(--font-display); font-size: 2.5rem; line-height: 1; }
+            .metric-label { font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-secondary); }
+            
+            .hero-visual { position: relative; height: 80vh; width: 100%; display: flex; align-items: center; justify-content: center; }
+            .three-canvas-wrapper { width: 100%; height: 100%; }
+            .visual-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 30%; background: linear-gradient(to top, var(--bg), transparent); pointer-events: none; }
 
-        .logo {
-          font-family: var(--font-display);
-          font-size: 2.2rem;
-          line-height: 1;
-          font-weight: 700;
-          letter-spacing: 1px;
-        }
-        
-        .nav-items {
-          display: flex;
-          gap: 40px;
-        }
-        
-        .nav-link {
-          font-family: var(--font-code);
-          font-size: 0.85rem;
-          text-transform: uppercase;
-          color: var(--text-muted);
-          text-decoration: none;
-          position: relative;
-          letter-spacing: 1px;
-          transition: 0.3s;
-        }
-        
-        .nav-link:hover {
-          color: white;
-        }
+            /* SECTIONS */
+            .content-section { padding: 140px 5%; max-width: 1400px; margin: 0 auto; opacity: 0; transform: translateY(50px); transition: all 1s var(--ease); }
+            .content-section.visible { opacity: 1; transform: translateY(0); }
+            .section-header { margin-bottom: 70px; border-left: 3px solid var(--neon); padding-left: 30px; }
+            .section-label { font-family: var(--font-mono); color: var(--neon); font-size: 0.8rem; letter-spacing: 2px; display: block; margin-bottom: 10px; }
+            .section-title { font-family: var(--font-display); font-size: 4rem; line-height: 1; text-transform: uppercase; }
 
-        /* BUTTONS */
-        .btn {
-          padding: 18px 36px;
-          font-family: var(--font-code);
-          font-weight: 700;
-          text-transform: uppercase;
-          text-decoration: none;
-          clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-          transition: 0.3s;
-          font-size: 0.9rem;
-          display: inline-block;
-          margin-right: 20px;
-          cursor: pointer;
-          border: none;
-        }
-        
-        .btn-primary {
-          background: var(--neon);
-          color: black;
-          border: 1px solid var(--neon);
-        }
-        
-        .btn-primary:hover {
-          background: transparent;
-          color: var(--neon);
-          box-shadow: 0 0 20px var(--neon-dim);
-        }
-        
-        .btn-glass {
-          background: rgba(255, 255, 255, 0.05);
-          color: white;
-          border: 1px solid var(--border);
-          backdrop-filter: blur(5px);
-        }
-        
-        .btn-glass:hover {
-          background: rgba(255, 255, 255, 0.15);
-          border-color: white;
-        }
+            /* BENTO */
+            .bento-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; }
+            .bento-card { background: var(--surface); border: 1px solid var(--border); padding: 40px; position: relative; overflow: hidden; transition: 0.4s var(--ease); display: flex; flex-direction: column; justify-content: flex-end; min-height: 320px; }
+            .bento-card:hover { transform: translateY(-10px); border-color: var(--neon); }
+            .span-4 { grid-column: span 4; } .span-2 { grid-column: span 2; }
+            .card-bg-icon { position: absolute; top: -20px; right: -20px; font-size: 15rem; color: rgba(255,255,255,0.02); pointer-events: none; }
+            .icon-box { width: 60px; height: 60px; background: rgba(255,255,255,0.05); display: grid; place-items: center; font-size: 1.5rem; color: var(--neon); margin-bottom: 25px; border-radius: 50%; }
+            .bento-card h3 { font-family: var(--font-display); font-size: 2.2rem; margin-bottom: 15px; }
+            .bento-card p { color: var(--text-secondary); font-size: 1.1rem; max-width: 600px; }
 
-        .btn-race {
-          background: var(--neon);
-          color: black;
-          padding: 12px 30px;
-          font-family: var(--font-display);
-          font-size: 1.4rem;
-          text-transform: uppercase;
-          text-decoration: none;
-          border: none;
-          cursor: pointer;
-          transform: skewX(-20deg);
-          display: inline-block;
-          font-weight: bold;
-          transition: 0.3s;
-        }
-        
-        .btn-race:hover {
-          background: white;
-          box-shadow: 0 0 30px white;
-        }
-        
-        .btn-race span {
-          display: block;
-          transform: skewX(20deg);
-        }
+            /* EVENTS */
+            .events-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; }
+            .event-card { background: var(--surface); border: 1px solid var(--border); padding: 40px; position: relative; overflow: hidden; transition: 0.4s; }
+            .event-card.featured { background: linear-gradient(145deg, rgba(20,20,20,1) 0%, rgba(5,5,5,1) 100%); border: 1px solid var(--neon); }
+            .event-card:hover { background: var(--surface-highlight); }
+            .scan-line { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--neon); opacity: 0.5; animation: scan 3s linear infinite; }
+            @keyframes scan { 0% { top: 0; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+            .event-status { font-family: var(--font-mono); color: #ff4444; font-size: 0.8rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+            .blink-dot { width: 8px; height: 8px; background: #ff4444; border-radius: 50%; animation: blink 1s infinite; }
+            @keyframes blink { 50% { opacity: 0; } }
+            .glitch-text-sm { font-family: var(--font-display); font-size: 4.5rem; line-height: 0.9; margin-bottom: 15px; }
+            .event-desc { font-size: 1.2rem; color: #ccc; margin-bottom: 30px; }
+            .event-meta { display: flex; gap: 30px; margin-bottom: 30px; font-family: var(--font-mono); font-size: 0.9rem; }
+            .meta-item.highlight { color: var(--neon); } .meta-item.dim { color: var(--text-secondary); margin-top: 10px; }
+            .btn-text { background: none; border: none; border-bottom: 1px solid var(--text); color: var(--text); padding-bottom: 5px; font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+            .btn-text:hover { color: var(--neon); border-color: var(--neon); gap: 15px; }
+            .event-group { display: flex; flex-direction: column; gap: 30px; }
+            .compact { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+            .card-badge { font-family: var(--font-mono); font-size: 0.7rem; padding: 4px 8px; border: 1px solid var(--border); display: inline-block; margin-bottom: 15px; color: var(--text-secondary); }
 
-        /* HERO SECTION */
-        .hero {
-          height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-          perspective: 1000px;
-        }
+            /* PROJECTS */
+            .projects-table { border-top: 1px solid var(--border); }
+            .table-header { display: grid; grid-template-columns: 0.5fr 2fr 2fr 1fr; padding: 20px 0; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-secondary); }
+            .table-row { display: grid; grid-template-columns: 0.5fr 2fr 2fr 1fr; padding: 30px 0; border-bottom: 1px solid var(--border); align-items: center; transition: 0.3s; }
+            .table-row:hover { background: rgba(255,255,255,0.02); padding-left: 10px; }
+            .p-id { font-family: var(--font-mono); color: var(--text-secondary); }
+            .p-info h4 { font-size: 1.4rem; font-weight: 500; }
+            .p-info span { font-size: 0.9rem; color: var(--text-secondary); }
+            .p-stack { display: flex; gap: 10px; }
+            .pill { font-family: var(--font-mono); font-size: 0.7rem; padding: 4px 10px; border: 1px solid var(--border); border-radius: 20px; }
+            .p-status { font-family: var(--font-mono); font-size: 0.8rem; font-weight: bold; text-align: right; }
+            .p-status.done { color: var(--neon); } .p-status.wip { color: orange; }
 
-        .hero-content {
-          width: 100%;
-          max-width: 1400px;
-          padding: 0 5%;
-          display: grid;
-          grid-template-columns: 1.2fr 0.8fr;
-          align-items: center;
-          z-index: 2;
-        }
+            /* TEAM */
+            .leads-wrapper { display: flex; justify-content: center; gap: 50px; margin-bottom: 80px; }
+            .lead-card { position: relative; width: 300px; text-align: center; }
+            .lead-visual { width: 280px; height: 320px; background: var(--surface); border: 1px solid var(--border); margin: 0 auto 20px; position: relative; overflow: hidden; }
+            .img-placeholder { width: 100%; height: 100%; background: #1a1a1a; }
+            .lead-overlay { position: absolute; inset: 0; background: linear-gradient(to top, var(--bg), transparent); opacity: 0.6; }
+            .lead-data h5 { font-family: var(--font-display); font-size: 2rem; margin-bottom: 5px; }
+            .lead-data .role { font-family: var(--font-mono); color: var(--neon); font-size: 0.8rem; }
+            .roster-container { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; border-top: 1px solid var(--border); padding-top: 60px; }
+            .roster-header { font-family: var(--font-display); font-size: 2rem; color: var(--text-secondary); margin-bottom: 30px; }
+            .roster-list li { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); transition: 0.3s; font-family: var(--font-mono); font-size: 0.9rem; }
+            .roster-list li:hover { padding-left: 10px; border-color: var(--border); }
+            .roster-list .lead { color: var(--neon); } .roster-list .year { color: var(--text-secondary); }
 
-        .hero-label {
-          font-family: var(--font-code);
-          color: var(--neon);
-          margin-bottom: 20px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-        
-        .hero-label::before {
-          content: "";
-          width: 30px;
-          height: 1px;
-          background: var(--neon);
-        }
+            /* FOOTER */
+            footer { background: #080808; padding: 100px 5% 30px; margin-top: 100px; border-top: 1px solid var(--border); }
+            .footer-top { display: flex; justify-content: space-between; margin-bottom: 80px; max-width: 1400px; margin: 0 auto 80px; }
+            .brand-block h2 { font-family: var(--font-display); font-size: 4rem; margin-bottom: 10px; }
+            .brand-block p { color: var(--text-secondary); font-size: 1.2rem; }
+            .contact-block { display: flex; gap: 60px; }
+            .c-item { display: flex; flex-direction: column; gap: 10px; font-family: var(--font-mono); font-size: 0.9rem; }
+            .c-item i { color: var(--neon); font-size: 1.2rem; }
+            .c-item a:hover { color: var(--neon); }
+            .footer-bottom { text-align: center; border-top: 1px solid var(--border); padding-top: 30px; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); }
 
-        h1 {
-          font-family: var(--font-display);
-          font-size: clamp(5rem, 10vw, 9rem);
-          line-height: 0.85;
-          text-transform: uppercase;
-          margin-bottom: 30px;
-          background: linear-gradient(180deg, #fff 0%, #888 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
+            /* ADMIN & LOGIN */
+            .login-wrapper, .admin-container { min-height: 100vh; display: flex; background: var(--bg); }
+            .login-wrapper { align-items: center; justify-content: center; background: radial-gradient(circle at center, #111 0%, #000 70%); }
+            .login-interface { width: 400px; padding: 50px; background: rgba(10,10,10,0.8); backdrop-filter: blur(20px); border: 1px solid var(--border); border-left: 4px solid var(--neon); }
+            .login-header h2 { font-family: var(--font-display); font-size: 3rem; margin-bottom: 5px; }
+            .login-header p { font-family: var(--font-mono); font-size: 0.75rem; color: var(--neon); margin-bottom: 40px; }
+            .input-group { display: flex; align-items: center; background: #000; border: 1px solid var(--border); margin-bottom: 20px; padding: 0 15px; }
+            .input-group i { color: var(--text-secondary); font-size: 0.8rem; }
+            .input-group input { width: 100%; padding: 15px; background: transparent; border: none; color: white; font-family: var(--font-mono); outline: none; }
+            .btn-login { width: 100%; padding: 15px; background: var(--neon); border: none; font-weight: bold; margin-top: 10px; }
+            .btn-back { width: 100%; padding: 15px; background: transparent; border: none; color: var(--text-secondary); font-family: var(--font-mono); font-size: 0.75rem; margin-top: 10px; transition: 0.3s; }
+            .btn-back:hover { color: white; }
 
-        .hero-p {
-          max-width: 500px;
-          font-size: 1.1rem;
-          line-height: 1.6;
-          color: #ccc;
-          margin-bottom: 40px;
-        }
+            .admin-sidebar { width: 280px; background: #080808; border-right: 1px solid var(--border); padding: 40px 30px; display: flex; flex-direction: column; }
+            .logo-text { font-family: var(--font-display); font-size: 2.5rem; margin-bottom: 60px; }
+            .menu-list { display: flex; flex-direction: column; gap: 5px; }
+            .menu-item { padding: 15px; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-secondary); display: flex; align-items: center; gap: 15px; border-radius: 4px; transition: 0.3s; }
+            .menu-item.active, .menu-item:hover { background: rgba(255,255,255,0.03); color: white; }
+            .menu-item.active { border-left: 2px solid var(--neon); }
+            .notif { background: var(--neon); color: black; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-left: auto; font-weight: bold; }
+            .logout { margin-top: auto; color: #ff4444; }
+            .admin-content { flex: 1; padding: 60px; overflow-y: auto; }
+            .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 60px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+            .admin-header h2 { font-family: var(--font-display); font-size: 3rem; }
+            .user-profile { font-family: var(--font-mono); font-size: 0.9rem; color: var(--neon); border: 1px solid var(--neon); padding: 5px 15px; }
+            .stats-deck { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 60px; }
+            .stat-card { background: var(--surface); padding: 30px; border: 1px solid var(--border); border-top: 3px solid var(--neon); }
+            .stat-card h3 { font-family: var(--font-display); font-size: 4rem; margin: 0; line-height: 1; color: white; }
+            .stat-card p { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-secondary); margin-top: 10px; }
+            .data-panel h3 { font-family: var(--font-mono); color: var(--neon); font-size: 1rem; margin-bottom: 20px; }
+            .data-table-admin { border: 1px solid var(--border); background: var(--surface); }
+            .data-table-admin .row { display: grid; grid-template-columns: 1.5fr 1.5fr 1.5fr 1fr; padding: 20px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.9rem; align-items: center; }
+            .data-table-admin .header { color: var(--text-secondary); font-size: 0.8rem; }
+            .btn-xs { background: transparent; border: 1px solid var(--border); color: white; padding: 5px 15px; font-size: 0.7rem; transition: 0.3s; }
+            .btn-xs:hover { border-color: var(--neon); color: var(--neon); }
 
-        .hero-visual {
-          position: relative;
-        }
-        
-        .car-img {
-          width: 140%;
-          margin-left: -20%;
-          transform: rotateY(-10deg) rotateX(5deg);
-          filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.8));
-          animation: carFloat 6s ease-in-out infinite;
-        }
-        
-        @keyframes carFloat {
-          0%, 100% { transform: translateY(0) rotateY(-10deg); }
-          50% { transform: translateY(-20px) rotateY(-10deg); }
-        }
+            @media (max-width: 1024px) {
+                .hero-grid { grid-template-columns: 1fr; text-align: center; }
+                .hero-visual { height: 50vh; order: -1; }
+                .hero-title { font-size: 4rem; }
+                .hero-cta-group, .hero-metrics { justify-content: center; }
+                .bento-grid, .events-grid, .projects-table .table-row, .roster-container, .footer-top { grid-template-columns: 1fr; }
+                .span-4, .span-2 { grid-column: span 1; }
+                .nav-menu { display: none; }
+                .admin-container { flex-direction: column; }
+                .admin-sidebar { width: 100%; height: auto; }
+            }
+/* --- CONTACT HUD STYLES --- */
+.contact-hud-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px; /* Reduced margin to connect with social bar */
+}
 
-        .lidar-badge {
-          position: absolute;
-          top: 20%;
-          right: 10%;
-          background: rgba(0, 0, 0, 0.8);
-          padding: 10px;
-          border: 1px solid var(--neon);
-          font-family: var(--font-code);
-          font-size: 0.8rem;
-          color: var(--neon);
-        }
+.hud-panel {
+    background: linear-gradient(135deg, rgba(20,20,20,0.8) 0%, rgba(5,5,5,0.9) 100%);
+    border: 1px solid var(--border);
+    padding: 60px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
 
-        /* SECTIONS */
-        section {
-          padding: 120px 5%;
-          max-width: 1500px;
-          margin: 0 auto;
-        }
+.panel-decor-corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--neon);
+    transition: 0.3s;
+}
+.panel-decor-corner.top-left { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+.panel-decor-corner.bottom-right { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+.hud-panel:hover .panel-decor-corner { width: 100%; height: 100%; opacity: 0.1; }
 
-        .section-header {
-          margin-bottom: 60px;
-          border-left: 3px solid var(--neon);
-          padding-left: 30px;
-        }
-        
-        .section-header h2 {
-          font-family: var(--font-display);
-          font-size: 4rem;
-          text-transform: uppercase;
-          line-height: 1;
-          margin-bottom: 10px;
-        }
-        
-        .section-header p {
-          font-family: var(--font-code);
-          color: var(--neon);
-        }
+.hud-status {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--neon);
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: 2px;
+}
 
-        .section-subtitle {
-          font-family: var(--font-display);
-          color: #fff;
-          margin-bottom: 20px;
-          text-align: center;
-          font-size: 2rem;
-        }
+.hud-title {
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    line-height: 0.9;
+    margin-bottom: 25px;
+    color: white;
+}
 
-        .bento-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 20px;
-        }
+.hud-text {
+    font-family: var(--font-body);
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    max-width: 90%;
+    margin-bottom: 40px;
+}
 
-        .card {
-          background: var(--glass);
-          border: 1px solid var(--border);
-          padding: 40px;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          transition: 0.4s;
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .card:hover {
-          border-color: var(--neon);
-          transform: translateY(-5px);
-          background: rgba(20, 20, 20, 0.8);
-        }
-        
-        .card h3 {
-          font-family: var(--font-display);
-          font-size: 2.5rem;
-          text-transform: uppercase;
-          margin-bottom: 10px;
-          line-height: 0.9;
-        }
-        
-        .card p {
-          color: #aaa;
-          line-height: 1.5;
-          font-size: 1rem;
-        }
-        
-        .card-icon {
-          font-size: 2.5rem;
-          color: var(--neon);
-          margin-bottom: 20px;
-        }
+.hud-right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
 
-        .span-2 { grid-column: span 2; }
-        .span-4 { grid-column: span 4; }
+.hud-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-left: 2px solid transparent;
+    padding: 25px 30px;
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
 
-        /* TEAM */
-        .team-leads-grid {
-          display: flex;
-          justify-content: center;
-          gap: 40px;
-          margin-bottom: 60px;
-          flex-wrap: wrap;
-        }
-        
-        .team-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-          gap: 20px;
-          margin-bottom: 60px;
-        }
+.hud-card:hover {
+    background: rgba(209, 255, 0, 0.05);
+    border-color: var(--neon);
+    border-left-width: 6px;
+    transform: translateX(10px);
+}
 
-        .team-card {
-          background: rgba(20, 20, 20, 0.6);
-          border: 1px solid var(--border);
-          text-align: center;
-          padding: 30px 20px;
-          transition: 0.3s;
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .team-card:hover {
-          border-color: var(--neon);
-          transform: translateY(-5px);
-        }
-        
-        .team-card::after {
-          content: "";
-          position: absolute;
-          top: -100%;
-          left: 0;
-          width: 100%;
-          height: 50%;
-          background: linear-gradient(to bottom, transparent, rgba(209, 255, 0, 0.1), transparent);
-          transition: 0.5s;
-        }
-        
-        .team-card:hover::after {
-          top: 100%;
-        }
+.icon-badge {
+    width: 50px;
+    height: 50px;
+    background: #000;
+    border: 1px solid var(--border);
+    color: var(--neon);
+    display: grid;
+    place-items: center;
+    font-size: 1.2rem;
+    border-radius: 4px;
+}
 
-        .team-img {
-          width: 120px;
-          height: 120px;
-          border-radius: 50%;
-          object-fit: cover;
-          margin: 0 auto 20px auto;
-          border: 2px solid #333;
-          transition: 0.3s;
-          background-color: #111;
-        }
-        
-        .team-card:hover .team-img {
-          border-color: var(--neon);
-        }
+.card-info { flex: 1; }
+.card-info h4 {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+.card-info .highlight {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: white;
+    line-height: 1;
+}
+.card-info .sub {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: #666;
+    margin-top: 2px;
+}
+.status-pill {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    padding: 4px 8px;
+    border: 1px solid var(--neon);
+    color: var(--neon);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.status-pill.warning { border-color: orange; color: orange; }
 
-        .role-tag {
-          font-family: var(--font-code);
-          color: var(--neon);
-          font-size: 0.75rem;
-          background: rgba(209, 255, 0, 0.1);
-          padding: 4px 8px;
-          display: inline-block;
-          margin-bottom: 10px;
-        }
-        
-        .member-name {
-          font-family: var(--font-display);
-          font-size: 1.8rem;
-          line-height: 1;
-          color: white;
-        }
+/* --- SOCIAL TRANSMISSION BAR --- */
+.social-nexus-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
 
-        .member-year {
-          color: #666;
-          font-family: var(--font-code);
-          font-size: 0.8rem;
-          margin-top: 5px;
-        }
+.social-text h3 {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    color: white;
+    line-height: 1;
+    margin-bottom: 5px;
+}
 
-        .domain-lead {
-          border-top: 3px solid var(--neon);
-        }
+.social-text p {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
 
-        /* AGENTICA */
-        .agentica-card {
-          flex-direction: row;
-          align-items: center;
-          border: 1px solid var(--neon) !important;
-        }
+.social-nodes {
+    display: flex;
+    gap: 20px;
+    z-index: 2;
+}
 
-        .agentica-label {
-          font-family: var(--font-code);
-          color: var(--neon);
-          letter-spacing: 2px;
-        }
+.social-node {
+    width: 60px;
+    height: 60px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    display: grid;
+    place-items: center;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    border-radius: 50%; /* Circular as per screenshot */
+    transition: 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    position: relative;
+    overflow: hidden;
+}
 
-        .agentica-title {
-          font-size: 6rem !important;
-          margin-top: 10px;
-          color: white;
-        }
+.social-node:hover {
+    color: #000;
+    border-color: var(--neon);
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 0 20px var(--neon-dim);
+}
 
-        .agentica-desc {
-          color: white !important;
-          font-size: 1.2rem;
-        }
+/* Specific Brand Colors on Hover */
+.social-node:hover { background: var(--neon); }
+.social-node.instagram:hover { background: #E1306C; color: white; border-color: #E1306C; box-shadow: 0 0 20px rgba(225, 48, 108, 0.5); }
+.social-node.linkedin:hover { background: #0077b5; color: white; border-color: #0077b5; box-shadow: 0 0 20px rgba(0, 119, 181, 0.5); }
+.social-node.twitter:hover { background: #1DA1F2; color: white; border-color: #1DA1F2; box-shadow: 0 0 20px rgba(29, 161, 242, 0.5); }
 
-        .agentica-stats {
-          display: flex;
-          gap: 50px;
-          margin-top: 30px;
-        }
-        
-        .stat h4 {
-          font-family: var(--font-display);
-          font-size: 3.5rem;
-          color: var(--neon);
-          line-height: 1;
-        }
-        
-        .stat span {
-          font-family: var(--font-code);
-          font-size: 0.8rem;
-          color: #fff;
-          text-transform: uppercase;
-        }
+.scan-line-horizontal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, transparent 0%, rgba(209,255,0,0.05) 50%, transparent 100%);
+    transform: translateX(-100%);
+    animation: scanHorizontal 4s linear infinite;
+    pointer-events: none;
+}
+@keyframes scanHorizontal {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
 
-        /* PROJECTS */
-        .project-status {
-          font-family: var(--font-code);
-          color: var(--neon);
-        }
+@media (max-width: 1024px) {
+    .contact-hud-grid { grid-template-columns: 1fr; }
+    .hud-panel { text-align: center; align-items: center; padding: 40px 20px; }
+    .hud-title { font-size: 2.5rem; }
+    .hud-card { flex-direction: column; text-align: center; }
+    .social-nexus-bar { flex-direction: column; text-align: center; gap: 30px; }
+}
+    /* --- UPDATED: HOLOGRAPHIC TEAM CARDS --- */
 
-        .project-tags {
-          margin-top: 20px;
-          display: flex;
-          gap: 10px;
-        }
+.subsection-header {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    color: white;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+}
+.subsection-header i { color: var(--neon); }
 
-        .tag {
-          border: 1px solid #333;
-          padding: 5px 10px;
-          font-size: 0.8rem;
-          font-family: var(--font-code);
-        }
+.members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* Slightly wider cards */
+    gap: 30px;
+}
 
-        /* FOOTER */
-        footer {
-          border-top: 1px solid #333;
-          padding: 50px 5%;
-          margin-top: 100px;
-          text-align: center;
-        }
+.member-card {
+    background: #050505;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
 
-        .footer-address {
-          font-family: var(--font-code);
-          color: #666;
-        }
+/* Hover: Card Glow & Lift */
+.member-card:hover {
+    border-color: var(--neon);
+    transform: translateY(-8px);
+    box-shadow: 0 0 20px rgba(209, 255, 0, 0.15); /* Soft neon glow */
+}
 
-        .footer-email {
-          font-family: var(--font-code);
-          color: var(--neon);
-          margin-top: 10px;
-        }
+/* IMAGE CONTAINER */
+.member-visual {
+    height: 280px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    background: #000;
+}
 
-        .footer-copyright {
-          margin-top: 50px;
-          font-size: 0.8rem;
-          opacity: 0.5;
-        }
+/* THE IMAGE ITSELF */
+.member-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    
+    /* IDLE STATE: "Blueprint Mode" (Cyan/Green Tint) */
+    filter: grayscale(100%) sepia(100%) hue-rotate(80deg) brightness(0.8) contrast(1.2);
+    opacity: 0.8;
+    
+    transition: all 0.5s ease-out;
+    transform: scale(1.0);
+}
 
-        /* LOGIN PAGE */
-        .login-container {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          height: 100vh;
-        }
+/* HOVER STATE: "System Online" (Full Color) */
+.member-card:hover .member-visual img {
+    filter: grayscale(0%) sepia(0%) hue-rotate(0deg) brightness(1.1) contrast(1);
+    opacity: 1;
+    transform: scale(1.1); /* Smooth Zoom */
+}
 
-        .login-box {
-          background: rgba(10, 10, 10, 0.9);
-          padding: 50px;
-          border: 1px solid var(--neon);
-          width: 400px;
-          text-align: center;
-          backdrop-filter: blur(10px);
-          position: relative;
-          z-index: 10;
-        }
+/* SCANLINE OVERLAY (Always moving faintly) */
+.visual-scanline {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.5) 51%);
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0.3;
+}
 
-        .mono {
-          font-family: var(--font-code);
-          color: var(--neon);
-          letter-spacing: 2px;
-          text-transform: uppercase;
-          font-size: 0.8rem;
-        }
+/* NEW: GLARE EFFECT ON HOVER */
+.member-visual::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+    transform: skewX(-25deg);
+    transition: 0s;
+    pointer-events: none;
+    z-index: 3;
+}
 
-        .input-field {
-          width: 100%;
-          background: #000;
-          border: 1px solid #333;
-          color: white;
-          padding: 10px;
-          margin-bottom: 15px;
-          font-family: var(--font-body);
-        }
+.member-card:hover .member-visual::after {
+    left: 200%;
+    transition: 0.6s ease-in-out; /* Flash effect on hover */
+}
 
-        .input-field:focus {
-          border-color: var(--neon);
-          outline: none;
-        }
+/* INFO BOX */
+.member-info {
+    padding: 20px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    position: relative;
+    z-index: 5;
+    transition: background 0.3s;
+}
 
-        .return-link {
-          display: block;
-          margin-top: 20px;
-          color: #666;
-          text-decoration: none;
-          font-family: var(--font-code);
-          background: none;
-          border: none;
-          cursor: pointer;
-        }
+/* Hover: Darken Info Box slightly to pop text */
+.member-card:hover .member-info {
+    background: #000;
+    border-top-color: var(--neon);
+}
 
-        /* ADMIN PAGE */
-        .sidebar {
-          width: 250px;
-          background: rgba(0, 0, 0, 0.8);
-          border-right: 1px solid #333;
-          padding: 30px;
-          display: flex;
-          flex-direction: column;
-          backdrop-filter: blur(10px);
-          z-index: 10;
-        }
+.member-info h4 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: #fff;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: color 0.3s;
+}
 
-        .nav-item {
-          padding: 15px 0;
-          color: #888;
-          cursor: pointer;
-          transition: 0.3s;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          font-family: Share Tech Mono, monospace;
-          font-size: 0.9rem;
-        }
-        
-        .nav-item:hover,
-        .nav-item.active {
-          color: var(--neon);
-          text-shadow: 0 0 10px var(--neon);
-        }
+.member-card:hover .member-info h4 {
+    color: var(--neon); /* Name turns neon on hover */
+}
 
-        .main {
-          flex: 1;
-          padding: 40px;
-          overflow-y: auto;
-          position: relative;
-          z-index: 5;
-        }
+.member-role {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    display: block;
+}
 
-        header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 40px;
-          border-bottom: 1px solid #333;
-          padding-bottom: 20px;
-        }
-        
-        header h2 {
-          font-family: Teko, sans-serif;
-          font-size: 3rem;
-          line-height: 1;
-        }
+/* Role Label Decoration (Little colored square) */
+.member-role::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--text-secondary);
+    margin-right: 8px;
+    transition: background 0.3s;
+}
 
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 20px;
-          margin-bottom: 40px;
-        }
-        
-        .stat-card {
-          background: var(--panel);
-          border: 1px solid #333;
-          padding: 25px;
-          border-left: 3px solid var(--neon);
-        }
-        
-        .stat-val {
-          font-family: Teko, sans-serif;
-          font-size: 3.5rem;
-          color: var(--neon);
-          line-height: 1;
-        }
-        
-        .stat-label {
-          font-family: Share Tech Mono, monospace;
-          font-size: 0.8rem;
-          color: #fff;
-        }
-
-        .table-container {
-          background: var(--panel);
-          border: 1px solid #333;
-          padding: 20px;
-        }
-
-        .table-title {
-          font-family: Teko, sans-serif;
-          font-size: 2rem;
-          margin-bottom: 20px;
-          color: white;
-        }
-        
-        table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-        
-        th {
-          text-align: left;
-          padding: 15px;
-          color: var(--neon);
-          font-family: Share Tech Mono, monospace;
-          font-size: 0.8rem;
-          border-bottom: 1px solid #333;
-        }
-        
-        td {
-          padding: 15px;
-          border-bottom: 1px solid #222;
-        }
-
-        .status {
-          padding: 2px 8px;
-          font-size: 0.7rem;
-          font-weight: bold;
-          font-family: Share Tech Mono, monospace;
-        }
-        
-        .pending {
-          border: 1px solid orange;
-          color: orange;
-        }
-        
-        .approved {
-          border: 1px solid var(--neon);
-          color: var(--neon);
-        }
-
-        .btn-action {
-          background: transparent;
-          border: 1px solid #555;
-          color: white;
-          padding: 5px 15px;
-          cursor: pointer;
-          font-family: Share Tech Mono, monospace;
-        }
-        
-        .btn-action:hover {
-          border-color: var(--neon);
-          color: var(--neon);
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 1024px) {
-          .cursor-dot, .cursor-circle {
-            display: none;
-          }
-          * {
-            cursor: auto !important;
-          }
-          .hero-content {
-            grid-template-columns: 1fr;
-            text-align: center;
-          }
-          .hero-visual {
-            order: -1;
-            margin-bottom: 40px;
-          }
-          .car-img {
-            width: 90%;
-            margin-left: 0;
-            transform: none;
-          }
-          .bento-grid {
-            grid-template-columns: 1fr;
-          }
-          .span-2, .span-4 {
-            grid-column: span 1;
-          }
-          .nav-items {
-            display: none;
-          }
-          .agentica-card {
-            flex-direction: column;
-          }
-          .stats-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
-      
-      {currentPage === 'home' && <HomePage />}
-      {currentPage === 'login' && <LoginPage />}
-      {currentPage === 'admin' && <AdminPage />}
+.member-card:hover .member-role::before {
+    background: var(--neon); /* Dot turns neon */
+}
+        `}</style>
     </div>
   );
 };
