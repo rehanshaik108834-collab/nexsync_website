@@ -18,7 +18,11 @@ function AuthPage() {
     if (!authContext) return;
     
     const lines = [
+<<<<<<< HEAD
         "> CONNECTING TO NEXSYNC...",
+=======
+        "> CONNECTING TO NEXUS...",
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
         "> CHECKING CREDENTIALS...",
         "> DECRYPTING GATEWAY_V9...",
         "> HANDSHAKE COMPLETE."
@@ -221,11 +225,19 @@ function AuthPage() {
                 {/* Header with Glitch Effect */}
                 <div className="mb-10 text-center relative group cursor-default">
                     <h1 className="glitch-hover text-4xl md:text-5xl font-black uppercase tracking-tighter text-white mb-2 transition-all select-none">
+<<<<<<< HEAD
                       ACCOUNT <span className="text-[#ccff00]">ACCESS</span>
                     </h1>
                     <div className="h-0.5 w-16 bg-[#ccff00] mx-auto mb-3 shadow-[0_0_15px_#ccff00]"></div>
                     <p className="text-gray-500 text-[10px] tracking-[0.5em]">
                       /// sign in to continue
+=======
+                        NEXUS <span className="text-[#ccff00]">PROTOCOL</span>
+                    </h1>
+                    <div className="h-0.5 w-16 bg-[#ccff00] mx-auto mb-3 shadow-[0_0_15px_#ccff00]"></div>
+                    <p className="text-gray-500 text-[10px] tracking-[0.5em]">
+                        /// identity verification
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
                     </p>
                 </div>
 
@@ -282,7 +294,13 @@ function AuthPage() {
                         <span className="w-1.5 h-1.5 bg-[#ccff00] rounded-full animate-[pulse_2s_infinite] shadow-[0_0_5px_#ccff00]"></span>
                         Server: Online
                     </div>
+<<<<<<< HEAD
                     <div />
+=======
+                    <button onClick={() => navigate("/")} className="hover:text-white transition-colors hover:underline decoration-[#ccff00] underline-offset-4">
+                        Disconnect
+                    </button>
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
                 </div>
 
             </div>

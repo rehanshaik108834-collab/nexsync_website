@@ -156,11 +156,16 @@ const NetworkGlobe = () => {
   return <div ref={mountRef} className="three-canvas-wrapper" />;
 };
 
+<<<<<<< HEAD
 /* --- 3. UI SUB-COMPONENTS (UPDATED) --- */
+=======
+/* --- 3. UI SUB-COMPONENTS --- */
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
 
 const Navbar = ({ scrolled, setPage }) => (
   <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
     <div className="nav-brand hover-trigger">
+<<<<<<< HEAD
       {/* Removed the dot as requested previously */}
       NEX<span className="brand-accent">SYNC</span>
     </div>
@@ -170,10 +175,18 @@ const Navbar = ({ scrolled, setPage }) => (
       </a>
       <a href="#about" className="nav-link hover-trigger">
         About
+=======
+      NEX<span className="brand-accent">SYNC</span>.
+    </div>
+    <div className="nav-menu">
+      <a href="#about" className="nav-link hover-trigger">
+        Mission
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
       </a>
       <a href="#events" className="nav-link hover-trigger">
         Events
       </a>
+<<<<<<< HEAD
       {/* Link to the "System Builds" section */}
       <a href="#projects" className="nav-link hover-trigger">
         Project
@@ -188,6 +201,26 @@ const Navbar = ({ scrolled, setPage }) => (
     </div>
   </nav>
 );
+=======
+      <a href="#projects" className="nav-link hover-trigger">
+        Projects
+      </a>
+      <a href="#team" className="nav-link hover-trigger">
+        Personnel
+      </a>
+    </div>
+    <div className="nav-auth">
+      <button
+        className="btn-icon hover-trigger"
+        onClick={() => setPage("login")}
+      >
+        <i className="fas fa-fingerprint"></i> LOGIN
+      </button>
+    </div>
+  </nav>
+);
+
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
 const Hero = () => (
   <section className="hero-section">
     <div className="hero-grid">
@@ -219,10 +252,17 @@ const Hero = () => (
           style={{ animationDelay: "0.4s" }}
         >
           <a href="#projects" className="btn btn-primary hover-trigger">
+<<<<<<< HEAD
             <span>Explore Projects</span>
           </a>
           <a href="#team" className="btn btn-secondary hover-trigger">
             <span>Meet the Team</span>
+=======
+            <span>ACCESS PROJECTS</span>
+          </a>
+          <a href="#contact" className="btn btn-secondary hover-trigger">
+            <span>JOIN NETWORK</span>
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
           </a>
         </div>
 
@@ -232,16 +272,32 @@ const Hero = () => (
         >
           <div className="metric">
             <span className="metric-val">50+</span>
+<<<<<<< HEAD
             <span className="metric-label">Active members</span>
           </div>
           <div className="metric">
             <span className="metric-val">5+</span>
             <span className="metric-label">Innovation projects</span>
+=======
+            <span className="metric-label">ACTIVE NODES</span>
+          </div>
+          <div className="metric">
+            <span className="metric-val">12ms</span>
+            <span className="metric-label">LATENCY</span>
+          </div>
+          <div className="metric">
+            <span className="metric-val">L4</span>
+            <span className="metric-label">AUTONOMY</span>
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
           </div>
         </div>
       </div>
 
       <div className="hero-visual fade-in">
+<<<<<<< HEAD
+=======
+        {/* 3D Component Mounted Here */}
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
         <NetworkGlobe />
         <div className="visual-overlay"></div>
       </div>
@@ -264,6 +320,7 @@ const About = () => {
         <h2 className="section-title">Mission Profile</h2>
       </div>
 
+<<<<<<< HEAD
       <div className="events-grid">
         {/* Box 1: About NexSync (Featured) */}
         <div className="event-card featured hover-lift">
@@ -310,6 +367,49 @@ const About = () => {
               <p>Hands-on projects in AI and IoT, industry networking, and shaping the future of smart mobility.</p>
               <div className="meta-item dim">STATUS: OPEN FOR MEMBERS</div>
             </div>
+=======
+      <div className="bento-grid">
+        <div className="bento-card span-4 hover-lift">
+          <div className="card-bg-icon">
+            <i className="fas fa-network-wired"></i>
+          </div>
+          <div className="card-content">
+            <div className="icon-box">
+              <i className="fas fa-satellite-dish"></i>
+            </div>
+            <h3>The Core Directive</h3>
+            <p>
+              NexSync bridges the gap between theoretical algorithms and asphalt
+              reality. We don't just build code; we deploy systems that see,
+              think, and drive. Our focus spans from{" "}
+              <strong>Embedded IoT Clusters</strong> to{" "}
+              <strong>Crowd Density Analytics</strong>.
+            </p>
+          </div>
+        </div>
+        <div className="bento-card span-2 hover-lift">
+          <div className="card-content">
+            <div className="icon-box">
+              <i className="fas fa-microchip"></i>
+            </div>
+            <h3>Embedded Systems</h3>
+            <p>
+              Hardware deployment for ADAS using ESP32, Jetson Nano, and LiDAR
+              integration.
+            </p>
+          </div>
+        </div>
+        <div className="bento-card span-2 hover-lift">
+          <div className="card-content">
+            <div className="icon-box">
+              <i className="fas fa-eye"></i>
+            </div>
+            <h3>Computer Vision</h3>
+            <p>
+              Real-time path planning and object detection using YOLO v8 and
+              OpenCV.
+            </p>
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
           </div>
         </div>
       </div>
@@ -333,6 +433,7 @@ const Events = () => {
       </div>
 
       <div className="events-grid">
+<<<<<<< HEAD
         {/* Event 1: INNO VENTURES */}
         <div className="event-card hover-lift">
           <div className="event-status">
@@ -391,6 +492,49 @@ const Events = () => {
               <div className="meta-item"><i className="fas fa-clock"></i> 5:00 PM - 8:00 AM</div>
               <div className="meta-item highlight"><i className="fas fa-map-marker-alt"></i> IIIT Sri City</div>
               <div className="meta-item"><i className="fas fa-users"></i> 867 registered</div>
+=======
+        {/* Featured Event */}
+        <div className="event-card featured hover-lift">
+          <div className="scan-line"></div>
+          <div className="event-status">
+            <span className="blink-dot"></span> REGISTRATION ACTIVE
+          </div>
+          <div className="event-body">
+            <h3 className="glitch-text-sm">AGENTICA</h3>
+            <p className="event-desc">
+              The Ultimate AI Agent Mobility Challenge. Part of Abhisarga '26.
+            </p>
+            <div className="event-meta">
+              <div className="meta-item">
+                <i className="fas fa-calendar"></i> FEB 27 - MAR 2
+              </div>
+              <div className="meta-item highlight">
+                <i className="fas fa-trophy"></i> ₹2.25 LAKH POOL
+              </div>
+            </div>
+            <button className="btn-text hover-trigger">
+              INITIALIZE REGISTRATION <i className="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+
+        {/* Past Events */}
+        <div className="event-group">
+          <div className="event-card compact hover-lift">
+            <div className="card-badge">COMPLETED</div>
+            <div className="event-body">
+              <h3>Inno Ventures</h3>
+              <p>AIML in Transportation Design Challenge.</p>
+              <div className="meta-item dim">Winner Prize: ₹10k</div>
+            </div>
+          </div>
+          <div className="event-card compact hover-lift">
+            <div className="card-badge">COMPLETED</div>
+            <div className="event-body">
+              <h3>Logo Ventures</h3>
+              <p>Identity Design for Future Mobility Systems.</p>
+              <div className="meta-item dim">Winner Prize: ₹1k</div>
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
             </div>
           </div>
         </div>
@@ -461,6 +605,7 @@ const Team = () => {
   // --- DATA CONFIGURATION ---
   // Replace 'imgUrl' with your actual file paths (e.g., "/images/prathiba.jpg")
   const coreCommittee = [
+<<<<<<< HEAD
     { name: "PRATHIBA RAVI", role: "UG3 // CORE", imgUrl: null, linkedIn: "https://www.linkedin.com/in/prathiba-ravi-b85497295/" },
     { name: "CEFAN S S", role: "UG2 // CORE", imgUrl: null, linkedIn: "https://www.linkedin.com/in/cefan-s-s-a4b591324/" },
     { name: "MOHAMMAD SHAZIL", role: "UG2 // CORE", imgUrl: null, linkedIn: "https://www.linkedin.com/in/mohammad-shazil-a96123325/" },
@@ -471,6 +616,18 @@ const Team = () => {
   const domainLeads = [
     { name: "SRIMAN SOMA", role: "AI/ML LEAD", imgUrl: null, linkedIn: "https://www.linkedin.com/in/sriman-soma-91b19b306/" },
     { name: "GOUTAM BOPPANA", role: "DATA LEAD", imgUrl: null, linkedIn: "https://www.linkedin.com/in/goutam-boppana-3b2ab8285/" },
+=======
+    { name: "PRATHIBA RAVI", role: "UG3 // CORE", imgUrl: null },
+    { name: "CEFAN S S", role: "UG2 // CORE", imgUrl: null },
+    { name: "MOHAMMAD SHAZIL", role: "UG2 // CORE", imgUrl: null },
+    { name: "DHARUN PRASAD", role: "UG2 // CORE", imgUrl: null },
+    { name: "K NIKIL PRASANNAA", role: "UG2 // CORE", imgUrl: null },
+  ];
+
+  const domainLeads = [
+    { name: "SRIMAN SOMA", role: "AI/ML LEAD", imgUrl: null },
+    { name: "GOUTAM BOPPANA", role: "DATA LEAD", imgUrl: null },
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
     { name: "MANO RANJAN E", role: "ELEC LEAD", imgUrl: null },
     { name: "MUTHURAJA S", role: "UI/UX LEAD", imgUrl: null },
     { name: "STALIN V", role: "PR LEAD", imgUrl: null },
@@ -489,28 +646,47 @@ const Team = () => {
 
       {/* 1. CLUB LEADS (Highlight Cards) */}
       <div className="leads-wrapper" style={{ marginBottom: "80px" }}>
+<<<<<<< HEAD
         <a href="https://www.linkedin.com/in/adithya-ram-s-514a6528a/" target="_blank" rel="noopener noreferrer" className="lead-card hover-lift hover-trigger" aria-label="ADITHYA RAM S LinkedIn">
           <div className="lead-visual">
              {/* Put Club Lead Photo Here */}
             <img src="https://placehold.co/400x500/111/333?text=LEAD" alt="ADITHYA RAM S" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+=======
+        <div className="lead-card hover-lift hover-trigger">
+          <div className="lead-visual">
+             {/* Put Club Lead Photo Here */}
+            <img src="https://placehold.co/400x500/111/333?text=LEAD" alt="Lead" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
             <div className="lead-overlay"></div>
           </div>
           <div className="lead-data">
             <h5>ADITHYA RAM S</h5>
             <span className="role">CLUB LEAD // UG3</span>
           </div>
+<<<<<<< HEAD
         </a>
         <a href="https://www.linkedin.com/in/dhyaneshvar-k/" target="_blank" rel="noopener noreferrer" className="lead-card hover-lift hover-trigg er" aria-label="DHYANESH LinkedIn">
           <div className="lead-visual">
             {/* Put Co-Lead Photo Here */}
             <img src="https://placehold.co/400x500/111/333?text=CO-LEAD" alt="DHYANESH" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+=======
+        </div>
+        <div className="lead-card hover-lift hover-trigger">
+          <div className="lead-visual">
+            {/* Put Co-Lead Photo Here */}
+            <img src="https://placehold.co/400x500/111/333?text=CO-LEAD" alt="Co-Lead" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
             <div className="lead-overlay"></div>
           </div>
           <div className="lead-data">
             <h5>DHYANESH</h5>
             <span className="role">CO-LEAD // UG3</span>
           </div>
+<<<<<<< HEAD
         </a>
+=======
+        </div>
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
       </div>
 
       {/* 2. CORE COMMITTEE GRID */}
@@ -520,6 +696,7 @@ const Team = () => {
         </h3>
         <div className="members-grid">
           {coreCommittee.map((member, index) => (
+<<<<<<< HEAD
             member.linkedIn ? (
               <a
                 key={index}
@@ -558,6 +735,22 @@ const Team = () => {
                 </div>
               </div>
             )
+=======
+            <div key={index} className="member-card hover-lift hover-trigger">
+              <div className="member-visual">
+                {/* Image Logic: Uses placeholder if imgUrl is null */}
+                <img 
+                  src={member.imgUrl || `https://placehold.co/300x350/0a0a0a/333?text=${member.name.split(' ')[0]}`} 
+                  alt={member.name} 
+                />
+                <div className="visual-scanline"></div>
+              </div>
+              <div className="member-info">
+                <h4>{member.name}</h4>
+                <span className="member-role">{member.role}</span>
+              </div>
+            </div>
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
           ))}
         </div>
       </div>
@@ -569,6 +762,7 @@ const Team = () => {
         </h3>
         <div className="members-grid">
           {domainLeads.map((member, index) => (
+<<<<<<< HEAD
             member.linkedIn ? (
               <a
                 key={index}
@@ -607,6 +801,22 @@ const Team = () => {
                 </div>
               </div>
             )
+=======
+            <div key={index} className="member-card hover-lift hover-trigger">
+              <div className="member-visual">
+                 {/* Image Logic */}
+                <img 
+                  src={member.imgUrl || `https://placehold.co/300x350/0a0a0a/333?text=${member.name.split(' ')[0]}`} 
+                  alt={member.name} 
+                />
+                <div className="visual-scanline"></div>
+              </div>
+              <div className="member-info">
+                <h4>{member.name}</h4>
+                <span className="member-role">{member.role}</span>
+              </div>
+            </div>
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
           ))}
         </div>
       </div>
@@ -837,6 +1047,7 @@ const ContactSection = () => {
         {/* RIGHT: DATA CARDS */}
         <div className="hud-right-col">
             
+<<<<<<< HEAD
             {/* REPLACED: Single Smart Mobility Lab card (replaces LAB LOCATION + ACCESS HOURS) */}
             <div className="hud-card hover-lift hover-trigger">
               <div className="icon-badge">
@@ -849,6 +1060,32 @@ const ContactSection = () => {
                 <p className="sub" style={{marginTop: '0.5rem', fontWeight: 600}}>Smart Mobility Lab access restricted to members</p>
               </div>
               <div className="status-pill warning">Members Only</div>
+=======
+            {/* CARD 1: LAB LOCATION */}
+            <div className="hud-card hover-lift hover-trigger">
+                <div className="icon-badge">
+                    <i className="fas fa-map-marked-alt"></i>
+                </div>
+                <div className="card-info">
+                    <h4>BASE_OF_OPS</h4>
+                    <p className="highlight">Academic Block - 1, Room 248</p>
+                    <p className="sub">IIIT Sri City, Andhra Pradesh</p>
+                </div>
+                <div className="status-pill">Active</div>
+            </div>
+
+            {/* CARD 2: ACCESS HOURS */}
+            <div className="hud-card hover-lift hover-trigger">
+                <div className="icon-badge">
+                    <i className="fas fa-clock"></i>
+                </div>
+                <div className="card-info">
+                    <h4>OPERATIONAL_HOURS</h4>
+                    <p className="highlight">24/7 Access</p>
+                    <p className="sub">Restricted to Members</p>
+                </div>
+                <div className="status-pill warning">Restricted</div>
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
             </div>
 
             {/* CARD 3: CONTACT SPECS */}
@@ -873,12 +1110,21 @@ const ContactSection = () => {
               <p>Stay updated with our latest smart mobility innovations and events</p>
           </div>
           <div className="social-nodes">
+<<<<<<< HEAD
                 <a href="https://www.instagram.com/nexsync_iiits/?utm_source=ig_web_button_share_sheet#" className="social-node instagram hover-trigger" target="_blank" rel="noopener noreferrer">
                   <i className="fab fa-instagram"></i>
                 </a>
                 <a href="https://www.linkedin.com/in/nexsync-iiits-6b698032b/" className="social-node linkedin hover-trigger" target="_blank" rel="noopener noreferrer">
                   <i className="fab fa-linkedin-in"></i>
                 </a>
+=======
+              <a href="#" className="social-node instagram hover-trigger">
+                  <i className="fab fa-instagram"></i>
+              </a>
+              <a href="#" className="social-node linkedin hover-trigger">
+                  <i className="fab fa-linkedin-in"></i>
+              </a>
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
               <a href="#" className="social-node twitter hover-trigger">
                   <i className="fab fa-twitter"></i>
               </a>
@@ -1249,6 +1495,7 @@ const NexSyncApp = () => {
             .bento-card p { color: var(--text-secondary); font-size: 1.1rem; max-width: 600px; }
 
             /* EVENTS */
+<<<<<<< HEAD
             .events-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
             .event-card { background: var(--surface); border: 1px solid var(--border); padding: 40px; position: relative; overflow: hidden; transition: 0.4s; min-height: 450px; display: flex; flex-direction: column; }
             .event-card.featured { background: linear-gradient(145deg, rgba(20,20,20,1) 0%, rgba(5,5,5,1) 100%); border: 1px solid var(--neon); }
@@ -1270,6 +1517,26 @@ const NexSyncApp = () => {
             .event-group { display: contents; }
             .compact { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; }
             .card-badge { font-family: var(--font-mono); font-size: 0.7rem; padding: 5px 10px; border: 1px solid var(--border); display: inline-block; margin-bottom: 15px; color: var(--text-secondary); width: fit-content; }
+=======
+            .events-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; }
+            .event-card { background: var(--surface); border: 1px solid var(--border); padding: 40px; position: relative; overflow: hidden; transition: 0.4s; }
+            .event-card.featured { background: linear-gradient(145deg, rgba(20,20,20,1) 0%, rgba(5,5,5,1) 100%); border: 1px solid var(--neon); }
+            .event-card:hover { background: var(--surface-highlight); }
+            .scan-line { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--neon); opacity: 0.5; animation: scan 3s linear infinite; }
+            @keyframes scan { 0% { top: 0; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+            .event-status { font-family: var(--font-mono); color: #ff4444; font-size: 0.8rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+            .blink-dot { width: 8px; height: 8px; background: #ff4444; border-radius: 50%; animation: blink 1s infinite; }
+            @keyframes blink { 50% { opacity: 0; } }
+            .glitch-text-sm { font-family: var(--font-display); font-size: 4.5rem; line-height: 0.9; margin-bottom: 15px; }
+            .event-desc { font-size: 1.2rem; color: #ccc; margin-bottom: 30px; }
+            .event-meta { display: flex; gap: 30px; margin-bottom: 30px; font-family: var(--font-mono); font-size: 0.9rem; }
+            .meta-item.highlight { color: var(--neon); } .meta-item.dim { color: var(--text-secondary); margin-top: 10px; }
+            .btn-text { background: none; border: none; border-bottom: 1px solid var(--text); color: var(--text); padding-bottom: 5px; font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+            .btn-text:hover { color: var(--neon); border-color: var(--neon); gap: 15px; }
+            .event-group { display: flex; flex-direction: column; gap: 30px; }
+            .compact { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+            .card-badge { font-family: var(--font-mono); font-size: 0.7rem; padding: 4px 8px; border: 1px solid var(--border); display: inline-block; margin-bottom: 15px; color: var(--text-secondary); }
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
 
             /* PROJECTS */
             .projects-table { border-top: 1px solid var(--border); }
@@ -1358,11 +1625,18 @@ const NexSyncApp = () => {
             }
 /* --- CONTACT HUD STYLES --- */
 .contact-hud-grid {
+<<<<<<< HEAD
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 48px;
   margin-bottom: 30px; /* Reduced margin to connect with social bar */
   align-items: stretch;
+=======
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px; /* Reduced margin to connect with social bar */
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
 }
 
 .hud-panel {
@@ -1374,7 +1648,10 @@ const NexSyncApp = () => {
     flex-direction: column;
     justify-content: center;
     backdrop-filter: blur(10px);
+<<<<<<< HEAD
     min-height: 450px;
+=======
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
 }
 
 .panel-decor-corner {
@@ -1416,6 +1693,7 @@ const NexSyncApp = () => {
 }
 
 .hud-right-col {
+<<<<<<< HEAD
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -1431,6 +1709,22 @@ const NexSyncApp = () => {
   align-items: center;
   gap: 32px;
   transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+=======
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.hud-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-left: 2px solid transparent;
+    padding: 25px 30px;
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
 }
 
 .hud-card:hover {
@@ -1441,6 +1735,7 @@ const NexSyncApp = () => {
 }
 
 .icon-badge {
+<<<<<<< HEAD
   width: 80px;
   height: 80px;
   background: #000;
@@ -1451,11 +1746,23 @@ const NexSyncApp = () => {
   font-size: 2rem;
   border-radius: 6px;
   flex-shrink: 0;
+=======
+    width: 50px;
+    height: 50px;
+    background: #000;
+    border: 1px solid var(--border);
+    color: var(--neon);
+    display: grid;
+    place-items: center;
+    font-size: 1.2rem;
+    border-radius: 4px;
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
 }
 
 .card-info { flex: 1; }
 .card-info h4 {
     font-family: var(--font-mono);
+<<<<<<< HEAD
     font-size: 0.85rem;
     color: var(--text-secondary);
     letter-spacing: 1px;
@@ -1477,6 +1784,29 @@ const NexSyncApp = () => {
     font-family: var(--font-mono);
     font-size: 0.7rem;
     padding: 6px 12px;
+=======
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+.card-info .highlight {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: white;
+    line-height: 1;
+}
+.card-info .sub {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: #666;
+    margin-top: 2px;
+}
+.status-pill {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    padding: 4px 8px;
+>>>>>>> 8d5cda0b27898ceff5ce8c0d3e12cffdc891a821
     border: 1px solid var(--neon);
     color: var(--neon);
     text-transform: uppercase;
