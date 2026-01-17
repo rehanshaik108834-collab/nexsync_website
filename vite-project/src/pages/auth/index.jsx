@@ -18,7 +18,7 @@ function AuthPage() {
     if (!authContext) return;
     
     const lines = [
-        "> CONNECTING TO NEXUS...",
+        "> CONNECTING TO NEXSYNC...",
         "> CHECKING CREDENTIALS...",
         "> DECRYPTING GATEWAY_V9...",
         "> HANDSHAKE COMPLETE."
@@ -221,11 +221,11 @@ function AuthPage() {
                 {/* Header with Glitch Effect */}
                 <div className="mb-10 text-center relative group cursor-default">
                     <h1 className="glitch-hover text-4xl md:text-5xl font-black uppercase tracking-tighter text-white mb-2 transition-all select-none">
-                        NEXUS <span className="text-[#ccff00]">PROTOCOL</span>
+                      ACCOUNT <span className="text-[#ccff00]">ACCESS</span>
                     </h1>
                     <div className="h-0.5 w-16 bg-[#ccff00] mx-auto mb-3 shadow-[0_0_15px_#ccff00]"></div>
                     <p className="text-gray-500 text-[10px] tracking-[0.5em]">
-                        /// identity verification
+                      /// sign in to continue
                     </p>
                 </div>
 
@@ -282,9 +282,7 @@ function AuthPage() {
                         <span className="w-1.5 h-1.5 bg-[#ccff00] rounded-full animate-[pulse_2s_infinite] shadow-[0_0_5px_#ccff00]"></span>
                         Server: Online
                     </div>
-                    <button onClick={() => navigate("/")} className="hover:text-white transition-colors hover:underline decoration-[#ccff00] underline-offset-4">
-                        Disconnect
-                    </button>
+                    <div />
                 </div>
 
             </div>
