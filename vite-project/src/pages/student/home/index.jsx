@@ -21,7 +21,7 @@ const useScrollReveal = (ref, threshold = 0.1) => {
           observer.unobserve(ref.current);
         }
       },
-      { threshold }
+      { threshold },
     );
     if (ref.current) observer.observe(ref.current);
     return () => {
@@ -49,7 +49,7 @@ const NetworkGlobe = () => {
       75,
       container.clientWidth / container.clientHeight,
       0.1,
-      1000
+      1000,
     );
     camera.position.z = 4.2;
 
@@ -85,7 +85,7 @@ const NetworkGlobe = () => {
 
     particlesGeom.setAttribute(
       "position",
-      new THREE.BufferAttribute(posArray, 3)
+      new THREE.BufferAttribute(posArray, 3),
     );
     const particlesMat = new THREE.PointsMaterial({
       size: 0.02,
@@ -104,7 +104,7 @@ const NetworkGlobe = () => {
       opacity: 0.04,
     });
     const lineGeo = new THREE.WireframeGeometry(
-      new THREE.IcosahedronGeometry(2.0, 2)
+      new THREE.IcosahedronGeometry(2.0, 2),
     );
     const lines = new THREE.LineSegments(lineGeo, lineMat);
     mainGroup.add(lines);
@@ -267,9 +267,10 @@ const About = () => {
           <div className="event-body">
             <h3 className="glitch-text-sm">ABOUT NEXSYNC</h3>
             <p className="event-desc">
-              NexSync is the Smart Mobility Club at IIIT Sri City, focusing on integrating 
-              transportation systems with V2V/V2I communication, IoT sensors for ADAS, 
-              UAVs, and machine learning for autonomous systems.
+              NexSync is the Smart Mobility Club at IIIT Sri City, focusing on
+              integrating transportation systems with V2V/V2I communication, IoT
+              sensors for ADAS, UAVs, and machine learning for autonomous
+              systems.
             </p>
             <div className="event-meta">
               <div className="meta-item">
@@ -286,10 +287,18 @@ const About = () => {
         <div className="hud-right-col">
           {/* OUR MISSION */}
           <div className="event-card compact hover-lift">
-            <div className="card-badge" style={{color: 'var(--neon)', borderColor: 'var(--neon)'}}>MISSION</div>
+            <div
+              className="card-badge"
+              style={{ color: "var(--neon)", borderColor: "var(--neon)" }}
+            >
+              MISSION
+            </div>
             <div className="event-body">
               <h3>OUR MISSION</h3>
-              <p>Accelerating the adoption of intelligent mobility by empowering students to innovate in autonomous driving.</p>
+              <p>
+                Accelerating the adoption of intelligent mobility by empowering
+                students to innovate in autonomous driving.
+              </p>
               <div className="meta-item dim">FOCUS: INNOVATION & IMPACT</div>
             </div>
           </div>
@@ -299,7 +308,10 @@ const About = () => {
             <div className="card-badge">JOINING</div>
             <div className="event-body">
               <h3>WHY JOIN NEXSYNC?</h3>
-              <p>Hands-on projects in AI and IoT, industry networking, and shaping the future of smart mobility.</p>
+              <p>
+                Hands-on projects in AI and IoT, industry networking, and
+                shaping the future of smart mobility.
+              </p>
               <div className="meta-item dim">STATUS: OPEN FOR MEMBERS</div>
             </div>
           </div>
@@ -327,14 +339,12 @@ const Events = () => {
       <div className="events-grid">
         {/* Event 1: INNO VENTURES */}
         <div className="event-card hover-lift">
-          <div className="event-status">
-            Hackathon
-          </div>
+          <div className="event-status">Hackathon</div>
           <div className="event-body">
             <h3>INNO VENTURES</h3>
             <p className="event-desc">
-              Innovation challenge focused on AIML in Transportation. Design, Innovation and 
-              Entrepreneurship theme with Rs.10000 prize pool.
+              Innovation challenge focused on AIML in Transportation. Design,
+              Innovation and Entrepreneurship theme with Rs.10000 prize pool.
             </p>
             <div className="event-meta">
               <div className="meta-item">
@@ -355,34 +365,51 @@ const Events = () => {
 
         {/* Event 2: LOGO VENTURES */}
         <div className="event-card hover-lift">
-          <div className="event-status">
-            Event
-          </div>
+          <div className="event-status">Event</div>
           <div className="event-body">
             <h3>LOGO VENTURES</h3>
-            <p className="event-desc">Design competition with Rs. 1000 prize pool</p>
+            <p className="event-desc">
+              Design competition with Rs. 1000 prize pool
+            </p>
             <div className="event-meta">
-              <div className="meta-item"><i className="fas fa-calendar"></i> November 9-15, 2024</div>
-              <div className="meta-item"><i className="fas fa-hourglass-half"></i> 7 Days</div>
-              <div className="meta-item highlight"><i className="fas fa-map-marker-alt"></i> IIIT Sri City</div>
-              <div className="meta-item"><i className="fas fa-users"></i> 13 registered</div>
+              <div className="meta-item">
+                <i className="fas fa-calendar"></i> November 9-15, 2024
+              </div>
+              <div className="meta-item">
+                <i className="fas fa-hourglass-half"></i> 7 Days
+              </div>
+              <div className="meta-item highlight">
+                <i className="fas fa-map-marker-alt"></i> IIIT Sri City
+              </div>
+              <div className="meta-item">
+                <i className="fas fa-users"></i> 13 registered
+              </div>
             </div>
           </div>
         </div>
 
         {/* Event 3: AGETICA */}
         <div className="event-card hover-lift">
-          <div className="event-status">
-            Hackathon
-          </div>
+          <div className="event-status">Hackathon</div>
           <div className="event-body">
             <h3>AGETICA</h3>
-            <p className="event-desc">Part of ABHISARGA '26. Free registration with Rs. 2.25 Lakh prize pool and internship opportunities for winners.</p>
+            <p className="event-desc">
+              Part of ABHISARGA '26. Free registration with Rs. 2.25 Lakh prize
+              pool and internship opportunities for winners.
+            </p>
             <div className="event-meta">
-              <div className="meta-item"><i className="fas fa-calendar"></i> February 27 - March 2, 2025</div>
-              <div className="meta-item"><i className="fas fa-clock"></i> 5:00 PM - 8:00 AM</div>
-              <div className="meta-item highlight"><i className="fas fa-map-marker-alt"></i> IIIT Sri City</div>
-              <div className="meta-item"><i className="fas fa-users"></i> 867 registered</div>
+              <div className="meta-item">
+                <i className="fas fa-calendar"></i> February 27 - March 2, 2025
+              </div>
+              <div className="meta-item">
+                <i className="fas fa-clock"></i> 5:00 PM - 8:00 AM
+              </div>
+              <div className="meta-item highlight">
+                <i className="fas fa-map-marker-alt"></i> IIIT Sri City
+              </div>
+              <div className="meta-item">
+                <i className="fas fa-users"></i> 867 registered
+              </div>
             </div>
           </div>
         </div>
@@ -451,21 +478,71 @@ const Team = () => {
   const isVisible = useScrollReveal(ref);
 
   // --- DATA CONFIGURATION ---
-  // Replace 'imgUrl' with your actual file paths (e.g., "/images/prathiba.jpg")
+  // Image paths mapped to your src/assets folder (Note: .JPG extension is uppercase)
   const coreCommittee = [
-    { name: "PRATHIBA RAVI", role: "UG3 // CORE", imgUrl: null, linkedIn: "https://www.linkedin.com/in/prathiba-ravi-b85497295/" },
-    { name: "CEFAN S S", role: "UG2 // CORE", imgUrl: null, linkedIn: "https://www.linkedin.com/in/cefan-s-s-a4b591324/" },
-    { name: "MOHAMMAD SHAZIL", role: "UG2 // CORE", imgUrl: null, linkedIn: "https://www.linkedin.com/in/mohammad-shazil-a96123325/" },
-    { name: "DHARUN PRASAD", role: "UG2 // CORE", imgUrl: null, linkedIn: "https://www.linkedin.com/in/dharun-prasad-620943310/" },
-    { name: "K NIKIL PRASANNAA", role: "UG2 // CORE", imgUrl: null, linkedIn: "https://www.linkedin.com/in/k-nikil-prasannaa/" },
+    {
+      name: "PRATHIBA RAVI",
+      role: "UG3 // CORE",
+      imgUrl: "/src/assets/prathiba.JPG",
+      linkedIn: "https://www.linkedin.com/in/prathiba-ravi-b85497295/",
+    },
+    {
+      name: "CEFAN S S",
+      role: "UG2 // CORE",
+      imgUrl: "/src/assets/cefan.JPG",
+      linkedIn: "https://www.linkedin.com/in/cefan-s-s-a4b591324/",
+    },
+    {
+      name: "MOHAMMAD SHAZIL",
+      role: "UG2 // CORE",
+      imgUrl: "/src/assets/shazil.JPG",
+      linkedIn: "https://www.linkedin.com/in/mohammad-shazil-a96123325/",
+    },
+    {
+      name: "DHARUN PRASAD",
+      role: "UG2 // CORE",
+      imgUrl: "/src/assets/dharun.JPG",
+      linkedIn: "https://www.linkedin.com/in/dharun-prasad-620943310/",
+    },
+    {
+      name: "K NIKIL PRASANNAA",
+      role: "UG2 // CORE",
+      imgUrl: "/src/assets/nikhil.JPG",
+      linkedIn: "https://www.linkedin.com/in/k-nikil-prasannaa/",
+    },
   ];
 
   const domainLeads = [
-    { name: "SRIMAN SOMA", role: "AI/ML LEAD", imgUrl: null, linkedIn: "https://www.linkedin.com/in/sriman-soma-91b19b306/" },
-    { name: "GOUTAM BOPPANA", role: "DATA LEAD", imgUrl: null, linkedIn: "https://www.linkedin.com/in/goutam-boppana-3b2ab8285/" },
-    { name: "MANO RANJAN E", role: "ELEC LEAD", imgUrl: null, linkedIn: "https://www.linkedin.com/in/mano-ranjan-elumalai-13b8b9271/" },
-    { name: "MUTHURAJA S", role: "UI/UX LEAD", imgUrl: null, linkedIn: "https://www.linkedin.com/in/muthuraja-s-6798b0314/" },
-    { name: "STALIN V", role: "PR LEAD", imgUrl: null, linkedIn: "https://www.linkedin.com/in/stalin-velayudham-1b80b9242/" },
+    {
+      name: "SRIMAN SOMA",
+      role: "AI/ML LEAD",
+      imgUrl: "/src/assets/sriman.JPG",
+      linkedIn: "https://www.linkedin.com/in/sriman-soma-91b19b306/",
+    },
+    {
+      name: "GOUTAM BOPPANA",
+      role: "DATA LEAD",
+      imgUrl: "/src/assets/gowtham.JPG",
+      linkedIn: "https://www.linkedin.com/in/goutam-boppana-3b2ab8285/",
+    },
+    {
+      name: "MANO RANJAN E",
+      role: "ELEC LEAD",
+      imgUrl: "/src/assets/mano.PNG",
+      linkedIn: "https://www.linkedin.com/in/mano-ranjan-elumalai-13b8b9271/",
+    },
+    {
+      name: "MUTHURAJA S",
+      role: "UI/UX LEAD",
+      imgUrl: "/src/assets/muthu.JPG",
+      linkedIn: "https://www.linkedin.com/in/muthuraja-s-6798b0314/",
+    },
+    {
+      name: "STALIN V",
+      role: "PR LEAD",
+      imgUrl: "/src/assets/stalin.JPG",
+      linkedIn: "https://www.linkedin.com/in/stalin-velayudham-1b80b9242/",
+    },
   ];
 
   return (
@@ -481,10 +558,20 @@ const Team = () => {
 
       {/* 1. CLUB LEADS (Highlight Cards) */}
       <div className="leads-wrapper" style={{ marginBottom: "80px" }}>
-        <a href="https://www.linkedin.com/in/adithya-ram-s-514a6528a/" target="_blank" rel="noopener noreferrer" className="lead-card hover-lift hover-trigger" aria-label="ADITHYA RAM S LinkedIn">
+        <a
+          href="https://www.linkedin.com/in/adithya-ram-s-514a6528a/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="lead-card hover-lift hover-trigger"
+          aria-label="ADITHYA RAM S LinkedIn"
+        >
           <div className="lead-visual">
-             {/* Put Club Lead Photo Here */}
-            <img src="https://placehold.co/400x500/111/333?text=LEAD" alt="ADITHYA RAM S" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+            {/* Put Club Lead Photo Here */}
+            <img
+              src="\src\assets\aditya.jpg"
+              alt="ADITHYA RAM S"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
             <div className="lead-overlay"></div>
           </div>
           <div className="lead-data">
@@ -492,10 +579,20 @@ const Team = () => {
             <span className="role">CLUB LEAD // UG3</span>
           </div>
         </a>
-        <a href="https://www.linkedin.com/in/dhyaneshvar-k/" target="_blank" rel="noopener noreferrer" className="lead-card hover-lift hover-trigg er" aria-label="DHYANESH LinkedIn">
+        <a
+          href="https://www.linkedin.com/in/dhyaneshvar-k/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="lead-card hover-lift hover-trigg er"
+          aria-label="DHYANESH LinkedIn"
+        >
           <div className="lead-visual">
             {/* Put Co-Lead Photo Here */}
-            <img src="https://placehold.co/400x500/111/333?text=CO-LEAD" alt="DHYANESH" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+            <img
+              src="\src\assets\dhyanesh.jpg"
+              alt="DHYANESH"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
             <div className="lead-overlay"></div>
           </div>
           <div className="lead-data">
@@ -511,7 +608,7 @@ const Team = () => {
           <i className="fas fa-shield-alt"></i> CORE COMMITTEE
         </h3>
         <div className="members-grid">
-          {coreCommittee.map((member, index) => (
+          {coreCommittee.map((member, index) =>
             member.linkedIn ? (
               <a
                 key={index}
@@ -523,9 +620,12 @@ const Team = () => {
               >
                 <div className="member-visual">
                   {/* Image Logic: Uses placeholder if imgUrl is null */}
-                  <img 
-                    src={member.imgUrl || `https://placehold.co/300x350/0a0a0a/333?text=${member.name.split(' ')[0]}`} 
-                    alt={member.name} 
+                  <img
+                    src={
+                      member.imgUrl ||
+                      `https://placehold.co/300x350/0a0a0a/333?text=${member.name.split(" ")[0]}`
+                    }
+                    alt={member.name}
                   />
                   <div className="visual-scanline"></div>
                 </div>
@@ -538,9 +638,12 @@ const Team = () => {
               <div key={index} className="member-card hover-lift hover-trigger">
                 <div className="member-visual">
                   {/* Image Logic: Uses placeholder if imgUrl is null */}
-                  <img 
-                    src={member.imgUrl || `https://placehold.co/300x350/0a0a0a/333?text=${member.name.split(' ')[0]}`} 
-                    alt={member.name} 
+                  <img
+                    src={
+                      member.imgUrl ||
+                      `https://placehold.co/300x350/0a0a0a/333?text=${member.name.split(" ")[0]}`
+                    }
+                    alt={member.name}
                   />
                   <div className="visual-scanline"></div>
                 </div>
@@ -549,8 +652,8 @@ const Team = () => {
                   <span className="member-role">{member.role}</span>
                 </div>
               </div>
-            )
-          ))}
+            ),
+          )}
         </div>
       </div>
 
@@ -560,7 +663,7 @@ const Team = () => {
           <i className="fas fa-code-branch"></i> DOMAIN LEADS
         </h3>
         <div className="members-grid">
-          {domainLeads.map((member, index) => (
+          {domainLeads.map((member, index) =>
             member.linkedIn ? (
               <a
                 key={index}
@@ -571,10 +674,13 @@ const Team = () => {
                 aria-label={`${member.name} LinkedIn`}
               >
                 <div className="member-visual">
-                   {/* Image Logic */}
-                  <img 
-                    src={member.imgUrl || `https://placehold.co/300x350/0a0a0a/333?text=${member.name.split(' ')[0]}`} 
-                    alt={member.name} 
+                  {/* Image Logic */}
+                  <img
+                    src={
+                      member.imgUrl ||
+                      `https://placehold.co/300x350/0a0a0a/333?text=${member.name.split(" ")[0]}`
+                    }
+                    alt={member.name}
                   />
                   <div className="visual-scanline"></div>
                 </div>
@@ -586,10 +692,13 @@ const Team = () => {
             ) : (
               <div key={index} className="member-card hover-lift hover-trigger">
                 <div className="member-visual">
-                   {/* Image Logic */}
-                  <img 
-                    src={member.imgUrl || `https://placehold.co/300x350/0a0a0a/333?text=${member.name.split(' ')[0]}`} 
-                    alt={member.name} 
+                  {/* Image Logic */}
+                  <img
+                    src={
+                      member.imgUrl ||
+                      `https://placehold.co/300x350/0a0a0a/333?text=${member.name.split(" ")[0]}`
+                    }
+                    alt={member.name}
                   />
                   <div className="visual-scanline"></div>
                 </div>
@@ -598,11 +707,10 @@ const Team = () => {
                   <span className="member-role">{member.role}</span>
                 </div>
               </div>
-            )
-          ))}
+            ),
+          )}
         </div>
       </div>
-
     </section>
   );
 };
@@ -781,8 +889,6 @@ const Footer = () => (
   </footer>
 );
 
-
-
 const ContactSection = () => {
   const ref = useRef();
   const isVisible = useScrollReveal(ref);
@@ -802,76 +908,107 @@ const ContactSection = () => {
       <div className="contact-hud-grid">
         {/* LEFT: MAIN VISUAL & INTRO */}
         <div className="hud-panel main hover-lift">
-            <div className="panel-decor-corner top-left"></div>
-            <div className="panel-decor-corner bottom-right"></div>
-            
-            <h3 className="hud-title">
-                READY TO <br />
-                <span style={{color: 'var(--neon)'}}>COLLABORATE?</span>
-            </h3>
-            
-            <p className="hud-text">
-                Join the network. Whether for research collaboration, membership inquiries, or industrial partnership, our communication lines are active.
-            </p>
+          <div className="panel-decor-corner top-left"></div>
+          <div className="panel-decor-corner bottom-right"></div>
+
+          <h3 className="hud-title">
+            READY TO <br />
+            <span style={{ color: "var(--neon)" }}>COLLABORATE?</span>
+          </h3>
+
+          <p className="hud-text">
+            Join the network. Whether for research collaboration, membership
+            inquiries, or industrial partnership, our communication lines are
+            active.
+          </p>
         </div>
 
         {/* RIGHT: DATA CARDS */}
         <div className="hud-right-col">
-            
-            {/* REPLACED: Single Smart Mobility Lab card (replaces LAB LOCATION + ACCESS HOURS) */}
-            <div className="hud-card hover-lift hover-trigger">
-              <div className="icon-badge">
-                <i className="fas fa-flask"></i>
-              </div>
-              <div className="card-info">
-                <h4 style={{letterSpacing: '0.18em', fontSize: '0.75rem', color: 'var(--muted)'}}>SMART MOBILITY LAB</h4>
-                <p className="highlight" style={{fontSize: '1.5rem', marginTop: '0.25rem'}}>Academic Block - 1, Room No. 248</p>
-                <p className="sub" style={{marginTop: '0.25rem'}}>Open 24/7 (Members only)</p>
-                <p className="sub" style={{marginTop: '0.5rem', fontWeight: 600}}>Smart Mobility Lab access restricted to members</p>
-              </div>
-              <div className="status-pill warning">Members Only</div>
+          {/* REPLACED: Single Smart Mobility Lab card (replaces LAB LOCATION + ACCESS HOURS) */}
+          <div className="hud-card hover-lift hover-trigger">
+            <div className="icon-badge">
+              <i className="fas fa-flask"></i>
             </div>
+            <div className="card-info">
+              <h4
+                style={{
+                  letterSpacing: "0.18em",
+                  fontSize: "0.75rem",
+                  color: "var(--muted)",
+                }}
+              >
+                SMART MOBILITY LAB
+              </h4>
+              <p
+                className="highlight"
+                style={{ fontSize: "1.5rem", marginTop: "0.25rem" }}
+              >
+                Academic Block - 1, Room No. 248
+              </p>
+              <p className="sub" style={{ marginTop: "0.25rem" }}>
+                Open 24/7 (Members only)
+              </p>
+              <p
+                className="sub"
+                style={{ marginTop: "0.5rem", fontWeight: 600 }}
+              >
+                Smart Mobility Lab access restricted to members
+              </p>
+            </div>
+            <div className="status-pill warning">Members Only</div>
+          </div>
 
-            {/* CARD 3: CONTACT SPECS */}
-            <div className="hud-card hover-lift hover-trigger">
-                <div className="icon-badge">
-                    <i className="fas fa-satellite"></i>
-                </div>
-                <div className="card-info">
-                    <h4>DIRECT_LINE</h4>
-                    <p className="highlight">+91 8825506227</p>
-                    <p className="sub">nexsyncmotors.club@iiits.in</p>
-                </div>
-                <div className="status-pill">Online</div>
+          {/* CARD 3: CONTACT SPECS */}
+          <div className="hud-card hover-lift hover-trigger">
+            <div className="icon-badge">
+              <i className="fas fa-satellite"></i>
             </div>
+            <div className="card-info">
+              <h4>DIRECT_LINE</h4>
+              <p className="highlight">+91 8825506227</p>
+              <p className="sub">nexsyncmotors.club@iiits.in</p>
+            </div>
+            <div className="status-pill">Online</div>
+          </div>
         </div>
       </div>
 
       {/* --- NEW: SOCIAL TRANSMISSION BAR --- */}
       <div className="social-nexus-bar hover-lift">
-          <div className="social-text">
-              <h3>Follow Our Journey</h3>
-              <p>Stay updated with our latest smart mobility innovations and events</p>
-          </div>
-          <div className="social-nodes">
-                <a href="https://www.instagram.com/nexsync_iiits/?utm_source=ig_web_button_share_sheet#" className="social-node instagram hover-trigger" target="_blank" rel="noopener noreferrer">
-                  <i className="fab fa-instagram"></i>
-                </a>
-                <a href="https://www.linkedin.com/in/nexsync-iiits-6b698032b/" className="social-node linkedin hover-trigger" target="_blank" rel="noopener noreferrer">
-                  <i className="fab fa-linkedin-in"></i>
-                </a>
-              <a href="#" className="social-node twitter hover-trigger">
-                  <i className="fab fa-twitter"></i>
-              </a>
-          </div>
-          {/* Decorative background scanline */}
-          <div className="scan-line-horizontal"></div>
+        <div className="social-text">
+          <h3>Follow Our Journey</h3>
+          <p>
+            Stay updated with our latest smart mobility innovations and events
+          </p>
+        </div>
+        <div className="social-nodes">
+          <a
+            href="https://www.instagram.com/nexsync_iiits/?utm_source=ig_web_button_share_sheet#"
+            className="social-node instagram hover-trigger"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <i className="fab fa-instagram"></i>
+          </a>
+          <a
+            href="https://www.linkedin.com/in/nexsync-iiits-6b698032b/"
+            className="social-node linkedin hover-trigger"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <i className="fab fa-linkedin-in"></i>
+          </a>
+          <a href="#" className="social-node twitter hover-trigger">
+            <i className="fab fa-twitter"></i>
+          </a>
+        </div>
+        {/* Decorative background scanline */}
+        <div className="scan-line-horizontal"></div>
       </div>
-
     </section>
   );
 };
-
 
 /* --- 5. MAIN CONTROLLER --- */
 
@@ -929,7 +1066,7 @@ const NexSyncApp = () => {
     // Attach hover listeners dynamically
     const addListeners = () => {
       const triggers = document.querySelectorAll(
-        "a, button, .hover-trigger, .hover-lift"
+        "a, button, .hover-trigger, .hover-lift",
       );
       triggers.forEach((t) => {
         t.addEventListener("mouseenter", onMouseEnter);
@@ -1125,10 +1262,67 @@ const NexSyncApp = () => {
             .leads-wrapper { display: flex; justify-content: center; gap: 50px; margin-bottom: 80px; }
             .lead-card { position: relative; width: 300px; text-align: center; }
             .lead-visual { width: 280px; height: 320px; background: var(--surface); border: 1px solid var(--border); margin: 0 auto 20px; position: relative; overflow: hidden; }
-            .img-placeholder { width: 100%; height: 100%; background: #1a1a1a; }
-            .lead-overlay { position: absolute; inset: 0; background: linear-gradient(to top, var(--bg), transparent); opacity: 0.6; }
-            .lead-data h5 { font-family: var(--font-display); font-size: 2rem; margin-bottom: 5px; }
-            .lead-data .role { font-family: var(--font-mono); color: var(--neon); font-size: 0.8rem; }
+.lead-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    
+    /* IDLE STATE: "Blueprint Mode" (Cyan/Green Tint) */
+    filter: grayscale(100%) sepia(100%) hue-rotate(80deg) brightness(0.8) contrast(1.2);
+    opacity: 0.8;
+    
+    transition: all 0.5s ease-out;
+    transform: scale(1.0);
+}
+
+/* HOVER STATE: "System Online" (Full Color) */
+.lead-card:hover .lead-visual img {
+    filter: grayscale(0%) sepia(0%) hue-rotate(0deg) brightness(1.1) contrast(1);
+    opacity: 1;
+    transform: scale(1.1); /* Smooth Zoom */
+}
+
+.img-placeholder { width: 100%; height: 100%; background: #1a1a1a; }
+.lead-overlay { position: absolute; inset: 0; background: linear-gradient(to top, var(--bg), transparent); opacity: 0.6; pointer-events: none; z-index: 1; }
+
+/* Scanline effect for leads */
+.lead-visual::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.5) 51%);
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0.3;
+}
+
+/* Glare effect on hover for leads */
+.lead-visual::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+    transform: skewX(-25deg);
+    transition: 0s;
+    pointer-events: none;
+    z-index: 3;
+}
+
+.lead-card:hover .lead-visual::after {
+    left: 200%;
+    transition: 0.6s ease-in-out;
+}
+
+.lead-data h5 { font-family: var(--font-display); font-size: 2rem; margin-bottom: 5px; transition: color 0.3s; }
+.lead-card:hover .lead-data h5 { color: var(--neon); }
+.lead-data .role { font-family: var(--font-mono); color: var(--neon); font-size: 0.8rem; }
             .roster-container { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; border-top: 1px solid var(--border); padding-top: 60px; }
             .roster-header { font-family: var(--font-display); font-size: 2rem; color: var(--text-secondary); margin-bottom: 30px; }
             .roster-list li { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); transition: 0.3s; font-family: var(--font-mono); font-size: 0.9rem; }
