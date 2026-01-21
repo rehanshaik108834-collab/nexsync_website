@@ -267,10 +267,14 @@ const About = () => {
           <div className="event-body">
             <h3 className="glitch-text-sm">ABOUT NEXSYNC</h3>
             <p className="event-desc">
-              NexSync is the Smart Mobility Club at IIIT Sri City, focusing on
-              integrating transportation systems with V2V/V2I communication, IoT
-              sensors for ADAS, UAVs, and machine learning for autonomous
-              systems.
+              NexSync, the Smart Mobility Club at IIIT Sri City, focuses on
+              integrating transportation systems with advanced technologies. We
+              explore V2V/V2I communication, IoT sensors for ADAS, UAVs, and
+              computer vision applications using machine learning for autonomous
+              systems. Our research initiatives impact the automobile industry,
+              electronic manufacturers, and national transportation authorities
+              through innovations in system-assisted driving and traffic
+              management solutions.
             </p>
             <div className="event-meta">
               <div className="meta-item">
@@ -295,11 +299,33 @@ const About = () => {
             </div>
             <div className="event-body">
               <h3>OUR MISSION</h3>
-              <p>
-                Accelerating the adoption of intelligent mobility by empowering
-                students to innovate in autonomous driving.
-              </p>
-              <div className="meta-item dim">FOCUS: INNOVATION & IMPACT</div>
+              <section>
+                <p>
+                  Our mission at NexSync is to accelerate the adoption of
+                  intelligent mobility solutions by empowering students to
+                  explore cutting-edge technologies in transportation. We strive
+                  to:
+                </p>
+                <ul>
+                  <li>
+                    <strong>Innovate</strong> in the areas of autonomous driving
+                    and smart traffic management.
+                  </li>
+                  <li>
+                    <strong>Collaborate</strong> with industry and research
+                    bodies to build scalable solutions.
+                  </li>
+                  <li>
+                    <strong>Educate</strong> members through projects,
+                    workshops, and hands-on learning.
+                  </li>
+                  <li>
+                    <strong>Impact</strong> society by contributing to safer,
+                    more efficient, and sustainable transport systems.
+                  </li>
+                </ul>
+              </section>
+              {/* <div className="meta-item dim">FOCUS: INNOVATION & IMPACT</div> */}
             </div>
           </div>
 
@@ -307,12 +333,32 @@ const About = () => {
           <div className="event-card compact hover-lift">
             <div className="card-badge">JOINING</div>
             <div className="event-body">
-              <h3>WHY JOIN NEXSYNC?</h3>
-              <p>
-                Hands-on projects in AI and IoT, industry networking, and
-                shaping the future of smart mobility.
-              </p>
-              <div className="meta-item dim">STATUS: OPEN FOR MEMBERS</div>
+              <section>
+                <h3>Why Join NexSync?</h3>
+                <ul>
+                  <li>
+                    <strong>Hands-on experience</strong> in projects involving
+                    IoT, AI, UAVs, and autonomous systems.
+                  </li>
+                  <li>
+                    <strong>Exposure</strong> to industry collaborations that
+                    open doors to internships and research opportunities.
+                  </li>
+                  <li>
+                    <strong>Skill-building workshops</strong> on in-demand tools
+                    and technologies in the mobility sector.
+                  </li>
+                  <li>
+                    <strong>Networking opportunities</strong> with peers,
+                    faculty, and industry professionals.
+                  </li>
+                  <li>
+                    A chance to <strong>drive real impact</strong> by shaping
+                    the future of smart mobility in India.
+                  </li>
+                </ul>
+              </section>
+              {/* <div className="meta-item dim">STATUS: OPEN FOR MEMBERS</div> */}
             </div>
           </div>
         </div>
