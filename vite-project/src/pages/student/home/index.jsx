@@ -6,6 +6,7 @@
  */
 
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import * as THREE from "three";
 
 /* --- 1. UTILITY: CUSTOM HOOKS --- */
@@ -467,6 +468,11 @@ const Events = () => {
 const Projects = () => {
   const ref = useRef();
   const isVisible = useScrollReveal(ref);
+  const navigate = useNavigate();
+
+  const handleApply = (projectId, projectName) => {
+    navigate(`/apply/${projectId}`, { state: { projectName } });
+  };
 
   return (
     <section
@@ -512,7 +518,10 @@ const Projects = () => {
             <span className="pill">OPENCV</span>
             <span className="pill">PYTHON</span>
           </div>
-          <div className="p-status wip">IN PROGRESS</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="p-status wip">IN PROGRESS</div>
+            <button className="btn btn-primary" onClick={() => handleApply('SYS-02', 'Crowd Density AI')}>Apply for Project</button>
+          </div>
         </div>
       </div>
     </section>
