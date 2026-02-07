@@ -5,9 +5,11 @@
  * Styling: CSS-in-JS with CSS Variables & GPU Acceleration
  */
 
-import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect, useContext } from "react";
 import { useNavigate } from 'react-router-dom';
 import * as THREE from "three";
+import axios from "@/api/axiosInstance";
+import { AuthContext } from "../../../context/auth-context";
 
 /* --- 1. UTILITY: CUSTOM HOOKS --- */
 
@@ -159,36 +161,60 @@ const NetworkGlobe = () => {
 
 /* --- 3. UI SUB-COMPONENTS (UPDATED) --- */
 
-const Navbar = ({ scrolled, setPage }) => (
-  <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
-    <div className="nav-brand hover-trigger">
-      {/* Removed the dot as requested previously */}
-      NEX<span className="brand-accent">SYNC</span>
-    </div>
-    <div className="nav-menu">
-      <a href="#home" className="nav-link hover-trigger">
-        Home
-      </a>
-      <a href="#about" className="nav-link hover-trigger">
-        About
-      </a>
-      <a href="#events" className="nav-link hover-trigger">
-        Events
-      </a>
-      {/* Link to the "System Builds" section */}
-      <a href="#projects" className="nav-link hover-trigger">
-        Project
-      </a>
-      <a href="#team" className="nav-link hover-trigger">
-        Team
-      </a>
-      {/* Link to the "Establish Connection" section */}
-      <a href="#contact-nexus" className="nav-link hover-trigger">
-        Contact
-      </a>
-    </div>
-  </nav>
-);
+const Navbar = ({ scrolled, setPage }) => {
+  const { auth, handleLogout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogoutClick = () => {
+    handleLogout();
+    navigate('/auth');
+  };
+
+  return (
+    <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
+      <div className="nav-brand hover-trigger">
+        {/* Removed the dot as requested previously */}
+        NEX<span className="brand-accent">SYNC</span>
+      </div>
+      <div className="nav-menu">
+        <a href="#home" className="nav-link hover-trigger">
+          Home
+        </a>
+        <a href="#about" className="nav-link hover-trigger">
+          About
+        </a>
+        <a href="#events" className="nav-link hover-trigger">
+          Events
+        </a>
+        {/* Link to the "System Builds" section */}
+        <a href="#projects" className="nav-link hover-trigger">
+          Project
+        </a>
+        <a href="#team" className="nav-link hover-trigger">
+          Team
+        </a>
+        {/* Link to the "Establish Connection" section */}
+        <a href="#contact-nexus" className="nav-link hover-trigger">
+          Contact
+        </a>
+        {auth?.authenticated && (
+          <>
+            <a href="/dashboard" className="nav-link hover-trigger" style={{ color: '#d1ff00' }}>
+              Dashboard
+            </a>
+            <button 
+              onClick={handleLogoutClick}
+              className="nav-link hover-trigger logout-btn"
+              style={{ background: 'transparent', border: 'none', cursor: 'none', fontFamily: 'inherit' }}
+            >
+              Logout
+            </button>
+          </>
+        )}
+      </div>
+    </nav>
+  );
+};
 const Hero = () => (
   <section className="hero-section">
     <div className="hero-grid">
@@ -469,9 +495,68 @@ const Projects = () => {
   const ref = useRef();
   const isVisible = useScrollReveal(ref);
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+  const [projects, setProjects] = useState([]);
+  const [userApplications, setUserApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchProjectsAndApplications();
+  }, []);
+
+  const fetchProjectsAndApplications = async () => {
+    try {
+      setLoading(true);
+      const [projectsRes, applicationsRes] = await Promise.all([
+        axios.get('/api/projects'),
+        axios.get('/api/applications/my-applications')
+      ]);
+      
+      console.log("Fetched projects:", projectsRes.data);
+      console.log("User applications:", applicationsRes.data);
+      
+      setProjects(projectsRes.data.data || projectsRes.data);
+      setUserApplications(applicationsRes.data.data || applicationsRes.data || []);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setError("Failed to load projects");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const canApply = (projectId) => {
+    const application = userApplications.find(app => app.projectId === projectId);
+    return !application;
+  };
+
+  const getApplicationStatus = (projectId) => {
+    const application = userApplications.find(app => app.projectId === projectId);
+    return application?.applicationStatus || null;
+  };
 
   const handleApply = (projectId, projectName) => {
+    console.log("Navigate to apply with:", { projectId, projectName });
     navigate(`/apply/${projectId}`, { state: { projectName } });
+  };
+
+  const getStatusClass = (status) => {
+    const statusMap = {
+      'COMPLETED': 'done',
+      'IN PROGRESS': 'wip',
+      'PLANNING': 'planning'
+    };
+    return statusMap[status] || 'planning';
+  };
+
+  const getApplicationStatusClass = (appStatus) => {
+    const statusMap = {
+      'Approved': 'done',
+      'Rejected': 'rejected',
+      'Pending': 'wip'
+    };
+    return statusMap[appStatus] || 'wip';
   };
 
   return (
@@ -485,45 +570,71 @@ const Projects = () => {
         <h2 className="section-title">System Builds</h2>
       </div>
 
-      <div className="projects-table">
-        <div className="table-header">
-          <span>ID</span>
-          <span>PROJECT NAME</span>
-          <span>TECH STACK</span>
-          <span>STATUS</span>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '40px 20px', color: '#00ff88' }}>
+          Loading projects...
         </div>
+      ) : error ? (
+        <div style={{ textAlign: 'center', padding: '40px 20px', color: '#ff4466' }}>
+          {error}
+        </div>
+      ) : projects.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px 20px', color: '#00ff88' }}>
+          No projects available at the moment
+        </div>
+      ) : (
+        <div className="projects-table">
+          <div className="table-header">
+            <span>ID</span>
+            <span>PROJECT NAME</span>
+            <span>TECH STACK</span>
+            <span>STATUS</span>
+          </div>
 
-        <div className="table-row hover-bg hover-trigger">
-          <span className="p-id">SYS-01</span>
-          <div className="p-info">
-            <h4>GeoGuide</h4>
-            <span>Routing & Discovery Assistant</span>
-          </div>
-          <div className="p-stack">
-            <span className="pill">FLASK</span>
-            <span className="pill">SQL</span>
-            <span className="pill">REACT</span>
-          </div>
-          <div className="p-status done">COMPLETED</div>
-        </div>
+          {projects.map((project, idx) => {
+            const appStatus = getApplicationStatus(project.projectId);
+            const canUserApply = canApply(project.projectId);
 
-        <div className="table-row hover-bg hover-trigger">
-          <span className="p-id">SYS-02</span>
-          <div className="p-info">
-            <h4>Crowd Density AI</h4>
-            <span>CV-based Safety Analytics</span>
-          </div>
-          <div className="p-stack">
-            <span className="pill">YOLO</span>
-            <span className="pill">OPENCV</span>
-            <span className="pill">PYTHON</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div className="p-status wip">IN PROGRESS</div>
-            <button className="btn btn-primary" onClick={() => handleApply('SYS-02', 'Crowd Density AI')}>Apply for Project</button>
-          </div>
+            return (
+              <div key={idx} className="table-row hover-bg hover-trigger">
+                <span className="p-id">{project.projectId}</span>
+                <div className="p-info">
+                  <h4>{project.projectName}</h4>
+                  <span>{project.description}</span>
+                </div>
+                <div className="p-stack">
+                  {project.techStack && project.techStack.map((tech, i) => (
+                    <span key={i} className="pill">{tech.toUpperCase()}</span>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div className={`p-status ${getStatusClass(project.status)}`}>
+                    {project.status}
+                  </div>
+                  {canUserApply && project.status !== 'COMPLETED' && (
+                    <button 
+                      className="btn btn-primary" 
+                      onClick={() => handleApply(project.projectId, project.projectName)}
+                    >
+                      Apply for Project
+                    </button>
+                  )}
+                  {!canUserApply && appStatus && (
+                    <div 
+                      className={`p-status ${getApplicationStatusClass(appStatus)}`}
+                      style={{ fontSize: '12px', padding: '6px 12px' }}
+                    >
+                      {appStatus === 'Approved' && 'Application Approved'}
+                      {appStatus === 'Rejected' && 'Application Rejected'}
+                      {appStatus === 'Pending' && 'Application Pending'}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </div>
+      )}
     </section>
   );
 };
@@ -1231,6 +1342,10 @@ const NexSyncApp = () => {
             .nav-link:hover { color: var(--text); }
             .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0%; height: 1px; background: var(--neon); transition: width 0.3s var(--ease); }
             .nav-link:hover::after { width: 100%; }
+            .logout-btn { font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); transition: color 0.3s; position: relative; padding: 0; }
+            .logout-btn:hover { color: #ff4444; }
+            .logout-btn::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0%; height: 1px; background: #ff4444; transition: width 0.3s var(--ease); }
+            .logout-btn:hover::after { width: 100%; }
             .btn-icon { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); padding: 10px 20px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.8rem; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
             .btn-icon:hover { border-color: var(--neon); color: var(--neon); }
 

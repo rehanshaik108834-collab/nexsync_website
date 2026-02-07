@@ -7,6 +7,9 @@ const controller = require('../../controllers/project-application-controller');
 // Apply for a project (authenticated users) - no file upload
 router.post('/apply', authenticate, controller.applyForProject);
 
+// Get user's own applications
+router.get('/my-applications', authenticate, controller.getMyApplications);
+
 // Admin routes
 router.get('/', authenticate, adminOnly, controller.listApplications);
 router.get('/:id', authenticate, adminOnly, controller.getApplication);

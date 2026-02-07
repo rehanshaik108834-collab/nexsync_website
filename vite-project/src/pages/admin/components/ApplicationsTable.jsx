@@ -172,6 +172,8 @@ const ApplicationsTable = ({ apps = [], onApprove, onReject }) => {
   const [selected, setSelected] = useState(null);
   const [confirming, setConfirming] = useState(null);
 
+  console.log("📊 Applications data:", apps);
+
   const handleApprove = (id) => {
     setConfirming({ action: 'approve', id });
   };
@@ -236,6 +238,10 @@ const ApplicationsTable = ({ apps = [], onApprove, onReject }) => {
           font-weight: 700;
         }
 
+        .table-header-cell:nth-child(3) {
+          min-width: 150px;
+        }
+
         .table-row {
           border-bottom: 1px solid var(--border);
           transition: all 0.3s var(--ease);
@@ -256,6 +262,15 @@ const ApplicationsTable = ({ apps = [], onApprove, onReject }) => {
           font-weight: 500;
           color: var(--neon);
           font-family: var(--font-body);
+        }
+
+        .table-project {
+          font-weight: 600;
+          color: var(--text);
+          font-family: var(--font-body);
+          white-space: nowrap;
+          min-width: 150px;
+          font-size: 1rem;
         }
 
         .table-status {
@@ -396,7 +411,9 @@ const ApplicationsTable = ({ apps = [], onApprove, onReject }) => {
                 <tr key={app._id} className="table-row">
                   <td className="table-cell table-name">{app.name}</td>
                   <td className="table-cell">{app.rollNumber}</td>
-                  <td className="table-cell">{app.projectName}</td>
+                  <td className="table-cell table-project">
+                    {app.projectName && app.projectName.trim() ? app.projectName : 'Project Name Not Set'}
+                  </td>
                   <td className="table-cell">{app.instituteEmail}</td>
                   <td className="table-cell">
                     <span
@@ -424,22 +441,6 @@ const ApplicationsTable = ({ apps = [], onApprove, onReject }) => {
                       >
                         View
                       </button>
-                      {app.applicationStatus === 'Pending' && (
-                        <>
-                          <button
-                            className="btn-table btn-approve-action"
-                            onClick={() => handleApprove(app._id)}
-                          >
-                            ✓
-                          </button>
-                          <button
-                            className="btn-table btn-reject-action"
-                            onClick={() => handleReject(app._id)}
-                          >
-                            ✕
-                          </button>
-                        </>
-                      )}
                     </div>
                   </td>
                 </tr>

@@ -92,10 +92,26 @@ const downloadResume = async (req, res) => {
   }
 };
 
+const getMyApplications = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const apps = await ProjectApplication.find({ userId }).sort({ appliedAt: -1 });
+    
+    res.json({
+      success: true,
+      data: apps,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
 module.exports = {
   applyForProject,
   listApplications,
   getApplication,
   updateStatus,
   downloadResume,
+  getMyApplications,
 };

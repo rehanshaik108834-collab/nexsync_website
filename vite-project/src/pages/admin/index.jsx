@@ -1,31 +1,52 @@
 import React, { useEffect, useState, useContext } from 'react';
 import axios from '../../api/axiosInstance';
 import { AuthContext } from '../../context/auth-context';
+import { useNavigate } from 'react-router-dom';
 import ApplicationsTable from './components/ApplicationsTable';
+import ProjectManagement from './components/ProjectManagement';
 
 function AdminPage() {
-    const { auth } = useContext(AuthContext);
+    const { auth, handleLogout } = useContext(AuthContext);
+    const navigate = useNavigate();
     const [counts, setCounts] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
     const [apps, setApps] = useState([]);
+    const [projects, setProjects] = useState([]);
+    const [activeTab, setActiveTab] = useState('applications');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         if (!auth?.authenticated || auth?.user?.role !== 'admin') return;
         fetchApps();
+        fetchProjects();
     }, [auth]);
+
+    const fetchProjects = async () => {
+        try {
+            const res = await axios.get('/api/projects');
+            if (res.data?.success) {
+                setProjects(res.data.data || []);
+                console.log("✅ Projects fetched:", res.data.data);
+            }
+        } catch (err) {
+            console.error("❌ Error fetching projects:", err);
+        }
+    };
 
     const fetchApps = async () => {
         try {
             setLoading(true);
             const res = await axios.get('/api/applications');
+            console.log("📥 Applications API Response:", res.data);
             if (res.data?.success) {
+                console.log("✅ Apps fetched:", res.data.data.apps);
                 setApps(res.data.data.apps);
                 setCounts(res.data.data.counts || {});
             }
             setLoading(false);
         } catch (err) {
             setLoading(false);
+            console.error("❌ Error fetching apps:", err);
             setError(err.response?.data?.message || 'Failed to load');
         }
     };
@@ -38,6 +59,11 @@ function AdminPage() {
             console.error(err);
             setError('Could not update status');
         }
+    };
+
+    const handleLogoutAdmin = () => {
+        handleLogout();
+        navigate('/auth');
     };
 
     return (
@@ -360,8 +386,81 @@ function AdminPage() {
 
             <div className="admin-container">
                 <div className="admin-header">
-                    <h1>Application Hub</h1>
-                    <p>Manage all project applications, track submissions, and approve candidates</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <div>
+                            <h1>Application Hub</h1>
+                            <p>Manage all project applications, track submissions, and approve candidates</p>
+                        </div>
+                        <button 
+                            onClick={handleLogoutAdmin}
+                            style={{
+                                padding: '10px 20px',
+                                background: 'rgba(255, 100, 100, 0.1)',
+                                border: '1px solid rgba(255, 100, 100, 0.3)',
+                                color: '#ff6464',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontFamily: 'monospace',
+                                fontWeight: '600',
+                                fontSize: '0.85rem',
+                                transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.background = 'rgba(255, 100, 100, 0.2)';
+                                e.target.style.boxShadow = '0 0 15px rgba(255, 100, 100, 0.3)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.background = 'rgba(255, 100, 100, 0.1)';
+                                e.target.style.boxShadow = 'none';
+                            }}
+                        >
+                            Logout
+                        </button>
+                    </div>
+                </div>
+
+                {/* Tabs for Applications and Projects */}
+                <div style={{
+                    display: 'flex',
+                    gap: '20px',
+                    marginBottom: '30px',
+                    borderBottom: '1px solid rgba(209, 255, 0, 0.1)',
+                    paddingBottom: '15px'
+                }}>
+                    <button
+                        onClick={() => setActiveTab('applications')}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: activeTab === 'applications' ? '#d1ff00' : '#888',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            padding: '5px 15px',
+                            borderBottom: activeTab === 'applications' ? '2px solid #d1ff00' : 'none',
+                            fontFamily: 'monospace',
+                            transition: 'all 0.3s ease'
+                        }}
+                    >
+                        📋 Applications
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('projects')}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: activeTab === 'projects' ? '#d1ff00' : '#888',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            padding: '5px 15px',
+                            borderBottom: activeTab === 'projects' ? '2px solid #d1ff00' : 'none',
+                            fontFamily: 'monospace',
+                            transition: 'all 0.3s ease'
+                        }}
+                    >
+                        🚀 Projects
+                    </button>
                 </div>
 
                 <div className="stats-grid">
@@ -387,24 +486,33 @@ function AdminPage() {
                     </div>
                 </div>
 
-                <div className="applications-section">
-                    {error && <div className="error-banner">✕ {error}</div>}
+                {activeTab === 'applications' ? (
+                    <div className="applications-section">
+                        {error && <div className="error-banner">✕ {error}</div>}
 
-                    <h2 className="section-title">All Applications</h2>
+                        <h2 className="section-title">All Applications</h2>
 
-                    {loading ? (
-                        <div className="loading-container">
-                            <div className="loading-spinner"></div>
-                            <div className="loading-text">Loading applications...</div>
-                        </div>
-                    ) : (
-                        <ApplicationsTable
-                            apps={apps}
-                            onApprove={(id) => updateStatus(id, 'Approved')}
-                            onReject={(id) => updateStatus(id, 'Rejected')}
+                        {loading ? (
+                            <div className="loading-container">
+                                <div className="loading-spinner"></div>
+                                <div className="loading-text">Loading applications...</div>
+                            </div>
+                        ) : (
+                            <ApplicationsTable
+                                apps={apps}
+                                onApprove={(id) => updateStatus(id, 'Approved')}
+                                onReject={(id) => updateStatus(id, 'Rejected')}
+                            />
+                        )}
+                    </div>
+                ) : (
+                    <div className="projects-section">
+                        <ProjectManagement 
+                            projects={projects}
+                            onProjectsUpdate={fetchProjects}
                         />
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         </div>
     );

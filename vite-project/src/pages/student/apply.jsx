@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from '../../api/axiosInstance';
 import { AuthContext } from '../../context/auth-context';
@@ -7,6 +7,7 @@ import { AuthContext } from '../../context/auth-context';
 const ApplyPage = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { auth } = useContext(AuthContext);
 
   const [projectName, setProjectName] = useState('');
@@ -19,8 +20,23 @@ const ApplyPage = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    if (!auth?.authenticated) navigate('/auth');
+    if (!auth?.authenticated) {
+      navigate('/auth');
+      return;
+    }
   }, [auth, navigate]);
+
+  // Extract project name from navigation state
+  useEffect(() => {
+    const name = location.state?.projectName;
+    if (name) {
+      console.log("✅ Project Name received from home page:", name);
+      setProjectName(name);
+    } else {
+      console.log("⚠️ No project name in location state, projectName empty");
+      console.log("   location.state:", location.state);
+    }
+  }, [location]);
 
   // Track mouse position for border glow effect
   const handleMouseMove = (e) => {
@@ -50,9 +66,12 @@ const ApplyPage = () => {
       instituteEmail: form.instituteEmail,
     };
 
+    console.log("📤 Submitting application with payload:", payload);
+
     try {
       setLoading(true);
       const res = await axios.post('/api/applications/apply', payload);
+      console.log("✅ Application submitted successfully:", res.data);
       setLoading(false);
       if (res.data?.success) {
         setSuccess(true);
@@ -60,6 +79,7 @@ const ApplyPage = () => {
       }
     } catch (err) {
       setLoading(false);
+      console.error("❌ Error submitting application:", err);
       setError(err.response?.data?.message || 'Error submitting application');
     }
   };
@@ -683,6 +703,21 @@ const ApplyPage = () => {
           <span className="project-badge-dot"></span>
           {projectName || `Project ${projectId || 'Loading...'}`}
         </motion.div>
+
+        {/* Debug Info - Show what's being submitted */}
+        <div style={{ 
+          padding: '12px 16px', 
+          background: 'rgba(209, 255, 0, 0.08)', 
+          border: '1px solid rgba(209, 255, 0, 0.2)',
+          borderRadius: '4px',
+          fontSize: '0.85rem',
+          color: '#d1ff00',
+          marginBottom: '20px',
+          fontFamily: 'monospace'
+        }}>
+          <div>📌 Project ID: <strong>{projectId || 'not set'}</strong></div>
+          <div>📌 Project Name: <strong>{projectName || 'not set'}</strong></div>
+        </div>
 
         {/* Alerts with animation */}
         <AnimatePresence>
