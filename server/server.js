@@ -8,6 +8,7 @@ const MONGO_URI = process.env.MONGO_URI;
 const authRoutes = require('./routes/auth-routes');
 const appRoutes = require('./routes/project-application-routes');
 const projectRoutes = require('./routes/project-routes');
+const eventRoutes = require('./routes/event-routes');
 
 cors({
     origin: process.env.CLIENT_URL,
@@ -29,6 +30,7 @@ mongoose.connect(MONGO_URI).then(() => {
 app.use('/auth', authRoutes);
 app.use('/api/applications', appRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/events', eventRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

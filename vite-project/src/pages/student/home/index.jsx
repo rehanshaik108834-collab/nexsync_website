@@ -397,6 +397,35 @@ const About = () => {
 const Events = () => {
   const ref = useRef();
   const isVisible = useScrollReveal(ref);
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get('/api/events');
+      setEvents(res.data.data || res.data);
+    } catch (err) {
+      console.error("Error fetching events:", err);
+      setError("Failed to load events");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEventClick = (redirectUrl) => {
+    window.open(redirectUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
 
   return (
     <section
@@ -409,84 +438,55 @@ const Events = () => {
         <h2 className="section-title">Event Logs</h2>
       </div>
 
-      <div className="events-grid">
-        {/* Event 1: INNO VENTURES */}
-        <div className="event-card hover-lift">
-          <div className="event-status">Hackathon</div>
-          <div className="event-body">
-            <h3>INNO VENTURES</h3>
-            <p className="event-desc">
-              Innovation challenge focused on AIML in Transportation. Design,
-              Innovation and Entrepreneurship theme with Rs.10000 prize pool.
-            </p>
-            <div className="event-meta">
-              <div className="meta-item">
-                <i className="fas fa-calendar"></i> November 9-15, 2024
-              </div>
-              <div className="meta-item">
-                <i className="fas fa-hourglass-half"></i> 7 Days
-              </div>
-              <div className="meta-item highlight">
-                <i className="fas fa-map-marker-alt"></i> IIIT Sri City
-              </div>
-              <div className="meta-item">
-                <i className="fas fa-users"></i> 24 registered
-              </div>
-            </div>
-          </div>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '40px 20px', color: '#00ff88' }}>
+          Loading events...
         </div>
-
-        {/* Event 2: LOGO VENTURES */}
-        <div className="event-card hover-lift">
-          <div className="event-status">Event</div>
-          <div className="event-body">
-            <h3>LOGO VENTURES</h3>
-            <p className="event-desc">
-              Design competition with Rs. 1000 prize pool
-            </p>
-            <div className="event-meta">
-              <div className="meta-item">
-                <i className="fas fa-calendar"></i> November 9-15, 2024
-              </div>
-              <div className="meta-item">
-                <i className="fas fa-hourglass-half"></i> 7 Days
-              </div>
-              <div className="meta-item highlight">
-                <i className="fas fa-map-marker-alt"></i> IIIT Sri City
-              </div>
-              <div className="meta-item">
-                <i className="fas fa-users"></i> 13 registered
-              </div>
-            </div>
-          </div>
+      ) : error ? (
+        <div style={{ textAlign: 'center', padding: '40px 20px', color: '#ff4466' }}>
+          {error}
         </div>
-
-        {/* Event 3: AGETICA */}
-        <div className="event-card hover-lift">
-          <div className="event-status">Hackathon</div>
-          <div className="event-body">
-            <h3>AGETICA</h3>
-            <p className="event-desc">
-              Part of ABHISARGA '26. Free registration with Rs. 2.25 Lakh prize
-              pool and internship opportunities for winners.
-            </p>
-            <div className="event-meta">
-              <div className="meta-item">
-                <i className="fas fa-calendar"></i> February 27 - March 2, 2025
-              </div>
-              <div className="meta-item">
-                <i className="fas fa-clock"></i> 5:00 PM - 8:00 AM
-              </div>
-              <div className="meta-item highlight">
-                <i className="fas fa-map-marker-alt"></i> IIIT Sri City
-              </div>
-              <div className="meta-item">
-                <i className="fas fa-users"></i> 867 registered
-              </div>
-            </div>
-          </div>
+      ) : events.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px 20px', color: '#00ff88' }}>
+          No events available at the moment
         </div>
-      </div>
+      ) : (
+        <div className="events-grid">
+          {events.map((event) => (
+            <a
+              key={event._id}
+              href={event.redirectUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="event-card hover-lift"
+              style={{ cursor: 'pointer', textDecoration: 'none', color: 'inherit' }}
+            >
+              <div className="event-status">{event.category}</div>
+              <div className="event-body">
+                <h3>{event.title}</h3>
+                <p className="event-desc">{event.description}</p>
+                <div className="event-meta">
+                  <div className="meta-item">
+                    <i className="fas fa-calendar"></i> {formatDate(event.startDate)} - {formatDate(event.endDate)}
+                  </div>
+                  <div className="meta-item">
+                    <i className="fas fa-clock"></i> {event.timeRange}
+                  </div>
+                  <div className="meta-item">
+                    <i className="fas fa-hourglass-half"></i> {event.duration}
+                  </div>
+                  <div className="meta-item highlight">
+                    <i className="fas fa-map-marker-alt"></i> {event.location}
+                  </div>
+                  <div className="meta-item">
+                    <i className="fas fa-users"></i> {event.registeredCount} registered
+                  </div>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
     </section>
   );
 };

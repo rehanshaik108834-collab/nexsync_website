@@ -4,6 +4,7 @@ import { AuthContext } from '../../context/auth-context';
 import { useNavigate } from 'react-router-dom';
 import ApplicationsTable from './components/ApplicationsTable';
 import ProjectManagement from './components/ProjectManagement';
+import EventManagement from './components/EventManagement';
 
 function AdminPage() {
     const { auth, handleLogout } = useContext(AuthContext);
@@ -11,6 +12,7 @@ function AdminPage() {
     const [counts, setCounts] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
     const [apps, setApps] = useState([]);
     const [projects, setProjects] = useState([]);
+    const [events, setEvents] = useState([]);
     const [activeTab, setActiveTab] = useState('applications');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -19,6 +21,7 @@ function AdminPage() {
         if (!auth?.authenticated || auth?.user?.role !== 'admin') return;
         fetchApps();
         fetchProjects();
+        fetchEvents();
     }, [auth]);
 
     const fetchProjects = async () => {
@@ -30,6 +33,18 @@ function AdminPage() {
             }
         } catch (err) {
             console.error("❌ Error fetching projects:", err);
+        }
+    };
+
+    const fetchEvents = async () => {
+        try {
+            const res = await axios.get('/api/events');
+            if (res.data?.success) {
+                setEvents(res.data.data || []);
+                console.log("✅ Events fetched:", res.data.data);
+            }
+        } catch (err) {
+            console.error("❌ Error fetching events:", err);
         }
     };
 
@@ -419,7 +434,6 @@ function AdminPage() {
                     </div>
                 </div>
 
-                {/* Tabs for Applications and Projects */}
                 <div style={{
                     display: 'flex',
                     gap: '20px',
@@ -460,6 +474,23 @@ function AdminPage() {
                         }}
                     >
                         🚀 Projects
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('events')}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: activeTab === 'events' ? '#d1ff00' : '#888',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            padding: '5px 15px',
+                            borderBottom: activeTab === 'events' ? '2px solid #d1ff00' : 'none',
+                            fontFamily: 'monospace',
+                            transition: 'all 0.3s ease'
+                        }}
+                    >
+                        📅 Events
                     </button>
                 </div>
 
@@ -505,11 +536,18 @@ function AdminPage() {
                             />
                         )}
                     </div>
-                ) : (
+                ) : activeTab === 'projects' ? (
                     <div className="projects-section">
-                        <ProjectManagement 
+                        <ProjectManagement
                             projects={projects}
                             onProjectsUpdate={fetchProjects}
+                        />
+                    </div>
+                ) : (
+                    <div className="events-section">
+                        <EventManagement
+                            events={events}
+                            onEventsUpdate={fetchEvents}
                         />
                     </div>
                 )}
