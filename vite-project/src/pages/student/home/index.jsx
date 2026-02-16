@@ -642,10 +642,32 @@ const Projects = () => {
 const Team = () => {
   const ref = useRef();
   const isVisible = useScrollReveal(ref);
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // --- DATA CONFIGURATION ---
-  // Image paths mapped to your src/assets folder (Note: .JPG extension is uppercase)
-  const coreCommittee = [
+  useEffect(() => {
+    fetchTeamMembers();
+  }, []);
+
+  const fetchTeamMembers = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get('/api/team');
+      setTeamMembers(res.data.data || res.data);
+    } catch (err) {
+      console.error("Error fetching team members:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filter team members by section
+  const leads = teamMembers.filter(member => member.section === 'LEADS');
+  const coreCommittee = teamMembers.filter(member => member.section === 'CORE_COMMITTEE');
+  const domainLeads = teamMembers.filter(member => member.section === 'DOMAIN_LEADS');
+
+  // Fallback to empty array if no data
+  const coreCommitteeFallback = coreCommittee.length > 0 ? coreCommittee : [
     {
       name: "PRATHIBA RAVI",
       role: "UG3 // CORE",
@@ -678,7 +700,7 @@ const Team = () => {
     },
   ];
 
-  const domainLeads = [
+  const domainLeadsFallback = domainLeads.length > 0 ? domainLeads : [
     {
       name: "SRIMAN SOMA",
       role: "AI/ML LEAD",
@@ -724,48 +746,74 @@ const Team = () => {
 
       {/* 1. CLUB LEADS (Highlight Cards) */}
       <div className="leads-wrapper" style={{ marginBottom: "80px" }}>
-        <a
-          href="https://www.linkedin.com/in/adithya-ram-s-514a6528a/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="lead-card hover-lift hover-trigger"
-          aria-label="ADITHYA RAM S LinkedIn"
-        >
-          <div className="lead-visual">
-            {/* Put Club Lead Photo Here */}
-            <img
-              src="\src\assets\aditya.jpg"
-              alt="ADITHYA RAM S"
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-            <div className="lead-overlay"></div>
-          </div>
-          <div className="lead-data">
-            <h5>ADITHYA RAM S</h5>
-            <span className="role">CLUB LEAD // UG3</span>
-          </div>
-        </a>
-        <a
-          href="https://www.linkedin.com/in/dhyaneshvar-k/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="lead-card hover-lift hover-trigg er"
-          aria-label="DHYANESH LinkedIn"
-        >
-          <div className="lead-visual">
-            {/* Put Co-Lead Photo Here */}
-            <img
-              src="\src\assets\dhyanesh.jpg"
-              alt="DHYANESH"
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-            <div className="lead-overlay"></div>
-          </div>
-          <div className="lead-data">
-            <h5>DHYANESH</h5>
-            <span className="role">CO-LEAD // UG3</span>
-          </div>
-        </a>
+        {leads.length > 0 ? (
+          leads.map((member, index) => (
+            <a
+              key={index}
+              href={member.linkedinUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="lead-card hover-lift hover-trigger"
+              aria-label={`${member.name} LinkedIn`}
+            >
+              <div className="lead-visual">
+                <img
+                  src={member.image || `https://placehold.co/300x350/0a0a0a/333?text=${member.name.split(" ")[0]}`}
+                  alt={member.name}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+                <div className="lead-overlay"></div>
+              </div>
+              <div className="lead-data">
+                <h5>{member.name}</h5>
+                <span className="role">{member.role} {member.yearTag ? `// ${member.yearTag}` : ''}</span>
+              </div>
+            </a>
+          ))
+        ) : (
+          <>
+            <a
+              href="https://www.linkedin.com/in/adithya-ram-s-514a6528a/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="lead-card hover-lift hover-trigger"
+              aria-label="ADITHYA RAM S LinkedIn"
+            >
+              <div className="lead-visual">
+                <img
+                  src="\src\assets\aditya.jpg"
+                  alt="ADITHYA RAM S"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+                <div className="lead-overlay"></div>
+              </div>
+              <div className="lead-data">
+                <h5>ADITHYA RAM S</h5>
+                <span className="role">CLUB LEAD // UG3</span>
+              </div>
+            </a>
+            <a
+              href="https://www.linkedin.com/in/dhyaneshvar-k/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="lead-card hover-lift hover-trigger"
+              aria-label="DHYANESH LinkedIn"
+            >
+              <div className="lead-visual">
+                <img
+                  src="\src\assets\dhyanesh.jpg"
+                  alt="DHYANESH"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+                <div className="lead-overlay"></div>
+              </div>
+              <div className="lead-data">
+                <h5>DHYANESH</h5>
+                <span className="role">CO-LEAD // UG3</span>
+              </div>
+            </a>
+          </>
+        )}
       </div>
 
       {/* 2. CORE COMMITTEE GRID */}
@@ -774,21 +822,23 @@ const Team = () => {
           <i className="fas fa-shield-alt"></i> CORE COMMITTEE
         </h3>
         <div className="members-grid">
-          {coreCommittee.map((member, index) =>
-            member.linkedIn ? (
+          {coreCommitteeFallback.map((member, index) => {
+            const linkedInUrl = member.linkedinUrl || member.linkedIn;
+            const imageUrl = member.image || member.imgUrl;
+
+            return linkedInUrl ? (
               <a
                 key={index}
-                href={member.linkedIn}
+                href={linkedInUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="member-card hover-lift hover-trigger"
                 aria-label={`${member.name} LinkedIn`}
               >
                 <div className="member-visual">
-                  {/* Image Logic: Uses placeholder if imgUrl is null */}
                   <img
                     src={
-                      member.imgUrl ||
+                      imageUrl ||
                       `https://placehold.co/300x350/0a0a0a/333?text=${member.name.split(" ")[0]}`
                     }
                     alt={member.name}
@@ -803,10 +853,9 @@ const Team = () => {
             ) : (
               <div key={index} className="member-card hover-lift hover-trigger">
                 <div className="member-visual">
-                  {/* Image Logic: Uses placeholder if imgUrl is null */}
                   <img
                     src={
-                      member.imgUrl ||
+                      imageUrl ||
                       `https://placehold.co/300x350/0a0a0a/333?text=${member.name.split(" ")[0]}`
                     }
                     alt={member.name}
@@ -818,8 +867,8 @@ const Team = () => {
                   <span className="member-role">{member.role}</span>
                 </div>
               </div>
-            ),
-          )}
+            );
+          })}
         </div>
       </div>
 
@@ -829,21 +878,23 @@ const Team = () => {
           <i className="fas fa-code-branch"></i> DOMAIN LEADS
         </h3>
         <div className="members-grid">
-          {domainLeads.map((member, index) =>
-            member.linkedIn ? (
+          {domainLeadsFallback.map((member, index) => {
+            const linkedInUrl = member.linkedinUrl || member.linkedIn;
+            const imageUrl = member.image || member.imgUrl;
+
+            return linkedInUrl ? (
               <a
                 key={index}
-                href={member.linkedIn}
+                href={linkedInUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="member-card hover-lift hover-trigger"
                 aria-label={`${member.name} LinkedIn`}
               >
                 <div className="member-visual">
-                  {/* Image Logic */}
                   <img
                     src={
-                      member.imgUrl ||
+                      imageUrl ||
                       `https://placehold.co/300x350/0a0a0a/333?text=${member.name.split(" ")[0]}`
                     }
                     alt={member.name}
@@ -858,10 +909,9 @@ const Team = () => {
             ) : (
               <div key={index} className="member-card hover-lift hover-trigger">
                 <div className="member-visual">
-                  {/* Image Logic */}
                   <img
                     src={
-                      member.imgUrl ||
+                      imageUrl ||
                       `https://placehold.co/300x350/0a0a0a/333?text=${member.name.split(" ")[0]}`
                     }
                     alt={member.name}
@@ -873,8 +923,8 @@ const Team = () => {
                   <span className="member-role">{member.role}</span>
                 </div>
               </div>
-            ),
-          )}
+            );
+          })}
         </div>
       </div>
     </section>

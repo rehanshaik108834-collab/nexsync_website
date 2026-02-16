@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import ApplicationsTable from './components/ApplicationsTable';
 import ProjectManagement from './components/ProjectManagement';
 import EventManagement from './components/EventManagement';
+import TeamManagement from './components/TeamManagement';
 
 function AdminPage() {
     const { auth, handleLogout } = useContext(AuthContext);
@@ -13,6 +14,7 @@ function AdminPage() {
     const [apps, setApps] = useState([]);
     const [projects, setProjects] = useState([]);
     const [events, setEvents] = useState([]);
+    const [teamMembers, setTeamMembers] = useState([]);
     const [activeTab, setActiveTab] = useState('applications');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -22,6 +24,7 @@ function AdminPage() {
         fetchApps();
         fetchProjects();
         fetchEvents();
+        fetchTeam();
     }, [auth]);
 
     const fetchProjects = async () => {
@@ -45,6 +48,18 @@ function AdminPage() {
             }
         } catch (err) {
             console.error("❌ Error fetching events:", err);
+        }
+    };
+
+    const fetchTeam = async () => {
+        try {
+            const res = await axios.get('/api/team');
+            if (res.data?.success) {
+                setTeamMembers(res.data.data || []);
+                console.log("✅ Team members fetched:", res.data.data);
+            }
+        } catch (err) {
+            console.error("❌ Error fetching team members:", err);
         }
     };
 
@@ -492,6 +507,23 @@ function AdminPage() {
                     >
                         📅 Events
                     </button>
+                    <button
+                        onClick={() => setActiveTab('team')}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: activeTab === 'team' ? '#d1ff00' : '#888',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            padding: '5px 15px',
+                            borderBottom: activeTab === 'team' ? '2px solid #d1ff00' : 'none',
+                            fontFamily: 'monospace',
+                            transition: 'all 0.3s ease'
+                        }}
+                    >
+                        👥 Team
+                    </button>
                 </div>
 
                 <div className="stats-grid">
@@ -543,11 +575,18 @@ function AdminPage() {
                             onProjectsUpdate={fetchProjects}
                         />
                     </div>
-                ) : (
+                ) : activeTab === 'events' ? (
                     <div className="events-section">
                         <EventManagement
                             events={events}
                             onEventsUpdate={fetchEvents}
+                        />
+                    </div>
+                ) : (
+                    <div className="team-section">
+                        <TeamManagement
+                            teamMembers={teamMembers}
+                            onTeamUpdate={fetchTeam}
                         />
                     </div>
                 )}
